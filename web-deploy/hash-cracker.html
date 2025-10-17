@@ -1,0 +1,839 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hash Cracker - Red Team Tools</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: #0a0a0a;
+            color: #00ff00;
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Nebula Background */
+        #nebulaCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -2;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a0a2a 50%, #0a1a0a 100%);
+        }
+
+        #starsCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+
+        /* Container */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+            position: relative;
+            z-index: 10;
+        }
+
+        /* Header */
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+            animation: fadeIn 1s ease-out;
+        }
+
+        .title {
+            font-size: 3rem;
+            background: linear-gradient(135deg, #00ff00 0%, #bf00ff 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 1rem;
+            text-shadow: 0 0 30px rgba(0, 255, 0, 0.5);
+        }
+
+        .subtitle {
+            color: #888;
+            font-size: 1.2rem;
+        }
+
+        /* Tool Container */
+        .tool-container {
+            background: rgba(20, 20, 30, 0.9);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(0, 255, 0, 0.3);
+            border-radius: 10px;
+            padding: 2rem;
+            box-shadow: 0 10px 40px rgba(0, 255, 0, 0.1);
+            animation: slideUp 0.8s ease-out;
+        }
+
+        /* Input Section */
+        .input-section {
+            background: rgba(10, 10, 20, 0.8);
+            border: 1px solid rgba(0, 255, 0, 0.3);
+            border-radius: 5px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .input-group {
+            margin-bottom: 1rem;
+        }
+
+        .input-group label {
+            display: block;
+            color: #00ff00;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .input-group textarea {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(0, 255, 0, 0.3);
+            color: #00ff00;
+            padding: 0.75rem;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .input-group textarea:focus {
+            outline: none;
+            border-color: #00ff00;
+            box-shadow: 0 0 10px rgba(0, 255, 0, 0.3);
+        }
+
+        /* Options Grid */
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .option-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .option-group label {
+            color: #00ff00;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .option-group select {
+            background: rgba(10, 10, 20, 0.8);
+            border: 1px solid rgba(0, 255, 0, 0.3);
+            color: #00ff00;
+            padding: 0.5rem;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+        }
+
+        .option-group select:focus {
+            outline: none;
+            border-color: #00ff00;
+            box-shadow: 0 0 10px rgba(0, 255, 0, 0.3);
+        }
+
+        /* Attack Mode Tabs */
+        .attack-modes {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 2rem;
+            border-bottom: 1px solid rgba(0, 255, 0, 0.3);
+        }
+
+        .attack-mode-tab {
+            background: transparent;
+            border: none;
+            color: #888;
+            padding: 0.75rem 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-bottom: 2px solid transparent;
+        }
+
+        .attack-mode-tab:hover {
+            color: #00ff00;
+        }
+
+        .attack-mode-tab.active {
+            color: #00ff00;
+            border-bottom-color: #00ff00;
+            background: rgba(0, 255, 0, 0.1);
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: rgba(30, 30, 40, 0.8);
+            border: 1px solid rgba(0, 255, 0, 0.3);
+            border-radius: 5px;
+            padding: 1rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0, 255, 0, 0.1), transparent);
+            animation: sweep 3s infinite;
+        }
+
+        @keyframes sweep {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+
+        .stat-label {
+            color: #888;
+            font-size: 0.8rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #00ff00;
+        }
+
+        .stat-value.danger {
+            color: #ff3333;
+        }
+
+        .stat-value.warning {
+            color: #ffaa00;
+        }
+
+        /* Progress Bar */
+        .progress-section {
+            margin-bottom: 2rem;
+        }
+
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+            color: #888;
+            font-size: 0.9rem;
+        }
+
+        .progress-bar {
+            height: 30px;
+            background: rgba(10, 10, 20, 0.8);
+            border: 1px solid rgba(0, 255, 0, 0.3);
+            border-radius: 5px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00ff00, #00aa00);
+            transition: width 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: #000;
+        }
+
+        .progress-bar.scanning .progress-fill {
+            background: linear-gradient(90deg, #00ff00, #00aa00, #00ff00);
+            background-size: 200% 100%;
+            animation: gradient-move 2s linear infinite;
+        }
+
+        @keyframes gradient-move {
+            0% { background-position: 0% 50%; }
+            100% { background-position: 200% 50%; }
+        }
+
+        /* Results Section */
+        .results-section {
+            background: rgba(10, 10, 20, 0.9);
+            border: 1px solid rgba(0, 255, 0, 0.3);
+            border-radius: 5px;
+            padding: 1rem;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .result-item {
+            background: rgba(30, 30, 40, 0.8);
+            border: 1px solid rgba(0, 255, 0, 0.3);
+            border-radius: 5px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .result-item.cracked {
+            background: rgba(0, 255, 0, 0.1);
+            border-color: rgba(0, 255, 0, 0.5);
+        }
+
+        .result-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .hash-type {
+            background: rgba(0, 100, 255, 0.2);
+            border: 1px solid rgba(0, 100, 255, 0.5);
+            color: #0088ff;
+            padding: 0.25rem 0.5rem;
+            border-radius: 3px;
+            font-size: 0.8rem;
+        }
+
+        .crack-status {
+            padding: 0.25rem 0.5rem;
+            border-radius: 3px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        .crack-status.success {
+            background: rgba(0, 255, 0, 0.2);
+            color: #00ff00;
+            border: 1px solid rgba(0, 255, 0, 0.5);
+        }
+
+        .crack-status.failed {
+            background: rgba(255, 0, 0, 0.2);
+            color: #ff3333;
+            border: 1px solid rgba(255, 0, 0, 0.5);
+        }
+
+        .hash-text {
+            font-family: monospace;
+            font-size: 0.85rem;
+            color: #888;
+            word-break: break-all;
+            margin-bottom: 0.5rem;
+        }
+
+        .plaintext {
+            font-size: 1.1rem;
+            color: #00ff00;
+            font-weight: bold;
+            background: rgba(0, 255, 0, 0.1);
+            padding: 0.5rem;
+            border-radius: 3px;
+            margin-top: 0.5rem;
+        }
+
+        /* Control Buttons */
+        .control-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-bottom: 2rem;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #00ff00 0%, #00aa00 100%);
+            border: none;
+            color: #000;
+            padding: 0.75rem 2rem;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            text-transform: uppercase;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(0, 255, 0, 0.4);
+        }
+
+        .btn:disabled {
+            background: #333;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn.danger {
+            background: linear-gradient(135deg, #ff3333 0%, #aa0000 100%);
+        }
+
+        /* Scrollbar */
+        .results-section::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .results-section::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.3);
+        }
+
+        .results-section::-webkit-scrollbar-thumb {
+            background: rgba(0, 255, 0, 0.3);
+            border-radius: 4px;
+        }
+
+        .results-section::-webkit-scrollbar-thumb:hover {
+            background: rgba(0, 255, 0, 0.5);
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .options-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <canvas id="nebulaCanvas"></canvas>
+    <canvas id="starsCanvas"></canvas>
+
+    <div class="container">
+        <div class="header">
+            <h1 class="title">🔓 Hash Cracker</h1>
+            <p class="subtitle">Password hash cracking (Hashcat/John the Ripper style)</p>
+        </div>
+
+        <div class="tool-container">
+            <!-- Attack Mode Tabs -->
+            <div class="attack-modes">
+                <button class="attack-mode-tab active" onclick="switchMode('dictionary')">📚 Dictionary Attack</button>
+                <button class="attack-mode-tab" onclick="switchMode('brute')">💪 Brute Force</button>
+                <button class="attack-mode-tab" onclick="switchMode('hybrid')">🔀 Hybrid Attack</button>
+                <button class="attack-mode-tab" onclick="switchMode('rainbow')">🌈 Rainbow Tables</button>
+            </div>
+
+            <!-- Input Section -->
+            <div class="input-section">
+                <div class="input-group">
+                    <label for="hashInput">Enter Hashes (one per line):</label>
+                    <textarea id="hashInput" placeholder="5d41402abc4b2a76b9719d911017c592
+e10adc3949ba59abbe56e057f20f883e
+098f6bcd4621d373cade4e832627b4f6"></textarea>
+                </div>
+
+                <div class="options-grid">
+                    <div class="option-group">
+                        <label for="hashType">Hash Type:</label>
+                        <select id="hashType">
+                            <option value="auto">Auto-Detect</option>
+                            <option value="md5">MD5</option>
+                            <option value="sha1">SHA-1</option>
+                            <option value="sha256">SHA-256</option>
+                            <option value="sha512">SHA-512</option>
+                            <option value="bcrypt">BCrypt</option>
+                            <option value="ntlm">NTLM</option>
+                            <option value="mysql">MySQL</option>
+                        </select>
+                    </div>
+                    <div class="option-group">
+                        <label for="wordlist">Wordlist:</label>
+                        <select id="wordlist">
+                            <option value="rockyou">rockyou.txt (14M)</option>
+                            <option value="common">common-passwords.txt (10K)</option>
+                            <option value="darkweb">darkweb2017.txt (1.4B)</option>
+                            <option value="custom">Custom Wordlist</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Control Buttons -->
+            <div class="control-buttons">
+                <button class="btn" id="startBtn" onclick="startCracking()">
+                    <span>⚡</span>
+                    <span>Start Cracking</span>
+                </button>
+                <button class="btn danger" id="stopBtn" onclick="stopCracking()" disabled>
+                    <span>⏹</span>
+                    <span>Stop</span>
+                </button>
+            </div>
+
+            <!-- Stats Grid -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-label">Speed</div>
+                    <div class="stat-value" id="speedStat">0 H/s</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Total Hashes</div>
+                    <div class="stat-value" id="totalStat">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Cracked</div>
+                    <div class="stat-value" id="crackedStat">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Success Rate</div>
+                    <div class="stat-value" id="successStat">0%</div>
+                </div>
+            </div>
+
+            <!-- Progress Section -->
+            <div class="progress-section">
+                <div class="progress-header">
+                    <span>Progress</span>
+                    <span id="progressText">0%</span>
+                </div>
+                <div class="progress-bar" id="progressBar">
+                    <div class="progress-fill" id="progressFill" style="width: 0%">0%</div>
+                </div>
+            </div>
+
+            <!-- Results Section -->
+            <h3 style="color: #00ff00; margin-bottom: 1rem;">Results:</h3>
+            <div class="results-section" id="resultsSection">
+                <div style="text-align: center; color: #888; padding: 2rem;">
+                    Enter hashes and click "Start Cracking" to begin
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let cracking = false;
+        let crackingInterval = null;
+        let progress = 0;
+        let totalHashes = 0;
+        let crackedCount = 0;
+        let currentMode = 'dictionary';
+        let hashSpeed = 0;
+
+        // Common passwords for simulation
+        const commonPasswords = [
+            'hello', 'password', 'test', '123456', 'admin', 'qwerty',
+            'letmein', 'welcome', 'monkey', 'dragon', 'master', 'abc123',
+            'password123', 'iloveyou', '123456789', 'football', 'baseball'
+        ];
+
+        // Hash examples with known plaintexts for demo
+        const knownHashes = {
+            '5d41402abc4b2a76b9719d911017c592': 'hello',
+            'e10adc3949ba59abbe56e057f20f883e': '123456',
+            '098f6bcd4621d373cade4e832627b4f6': 'test',
+            '5f4dcc3b5aa765d61d8327deb882cf99': 'password',
+            '21232f297a57a5a743894a0e4a801fc3': 'admin',
+            'd8578edf8458ce06fbc5bb76a58c5ca4': 'qwerty',
+            '0d107d09f5bbe40cade3de5c71e9e9b7': 'letmein',
+            '40be4e59b9a2a2b5dffb918c0e86b3d7': 'welcome',
+            'd0763edaa9d9bd2a9516280e9044d885': 'monkey',
+            '8621ffdbc5698829397d97767ac13db3': 'dragon'
+        };
+
+        function switchMode(mode) {
+            currentMode = mode;
+            document.querySelectorAll('.attack-mode-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            event.target.classList.add('active');
+        }
+
+        function detectHashType(hash) {
+            const length = hash.length;
+            if (length === 32) return 'MD5';
+            if (length === 40) return 'SHA-1';
+            if (length === 64) return 'SHA-256';
+            if (length === 128) return 'SHA-512';
+            if (hash.startsWith('$2')) return 'BCrypt';
+            return 'Unknown';
+        }
+
+        async function startCracking() {
+            const hashInput = document.getElementById('hashInput').value.trim();
+            if (!hashInput || cracking) return;
+
+            const hashes = hashInput.split('\n').filter(h => h.trim().length > 0);
+            if (hashes.length === 0) return;
+
+            cracking = true;
+            progress = 0;
+            totalHashes = hashes.length;
+            crackedCount = 0;
+
+            // Update UI
+            document.getElementById('startBtn').disabled = true;
+            document.getElementById('stopBtn').disabled = false;
+            document.getElementById('progressBar').classList.add('scanning');
+            document.getElementById('resultsSection').innerHTML = '';
+
+            // Update stats
+            document.getElementById('totalStat').textContent = totalHashes;
+            document.getElementById('crackedStat').textContent = '0';
+            document.getElementById('successStat').textContent = '0%';
+
+            // Simulate hash cracking
+            for (let i = 0; i < hashes.length && cracking; i++) {
+                const hash = hashes[i].trim().toLowerCase();
+                const hashType = detectHashType(hash);
+
+                // Simulate speed based on mode
+                hashSpeed = currentMode === 'brute' ? 15000000 :
+                           currentMode === 'dictionary' ? 45000000 :
+                           currentMode === 'hybrid' ? 30000000 :
+                           80000000; // rainbow
+
+                updateSpeed();
+
+                // Simulate cracking time
+                await delay(1000 + Math.random() * 2000);
+
+                // Check if hash can be cracked
+                let cracked = false;
+                let plaintext = null;
+
+                if (knownHashes[hash]) {
+                    cracked = true;
+                    plaintext = knownHashes[hash];
+                } else {
+                    // Random chance for unknown hashes
+                    cracked = Math.random() > 0.5;
+                    if (cracked) {
+                        plaintext = commonPasswords[Math.floor(Math.random() * commonPasswords.length)];
+                    }
+                }
+
+                if (cracked) crackedCount++;
+
+                // Add result
+                addResult(hash, hashType, cracked, plaintext);
+
+                // Update progress
+                progress = ((i + 1) / hashes.length) * 100;
+                updateProgress();
+                updateStats();
+            }
+
+            stopCracking();
+        }
+
+        function stopCracking() {
+            cracking = false;
+            if (crackingInterval) {
+                clearInterval(crackingInterval);
+                crackingInterval = null;
+            }
+
+            document.getElementById('startBtn').disabled = false;
+            document.getElementById('stopBtn').disabled = true;
+            document.getElementById('progressBar').classList.remove('scanning');
+            hashSpeed = 0;
+            updateSpeed();
+        }
+
+        function addResult(hash, type, cracked, plaintext) {
+            const resultsSection = document.getElementById('resultsSection');
+            const resultItem = document.createElement('div');
+            resultItem.className = `result-item ${cracked ? 'cracked' : ''}`;
+
+            resultItem.innerHTML = `
+                <div class="result-header">
+                    <span class="hash-type">${type}</span>
+                    <span class="crack-status ${cracked ? 'success' : 'failed'}">
+                        ${cracked ? '✓ CRACKED' : '✗ FAILED'}
+                    </span>
+                </div>
+                <div class="hash-text">${hash}</div>
+                ${cracked ? `
+                    <div class="plaintext">
+                        💡 Plaintext: ${plaintext}
+                    </div>
+                ` : ''}
+            `;
+
+            resultsSection.appendChild(resultItem);
+        }
+
+        function updateProgress() {
+            const progressFill = document.getElementById('progressFill');
+            const progressText = document.getElementById('progressText');
+
+            progressFill.style.width = progress + '%';
+            progressFill.textContent = Math.round(progress) + '%';
+            progressText.textContent = Math.round(progress) + '%';
+        }
+
+        function updateStats() {
+            document.getElementById('crackedStat').textContent = crackedCount;
+            const successRate = totalHashes > 0 ? (crackedCount / totalHashes * 100).toFixed(1) : 0;
+            document.getElementById('successStat').textContent = successRate + '%';
+        }
+
+        function updateSpeed() {
+            const speedStat = document.getElementById('speedStat');
+            if (hashSpeed > 1000000000) {
+                speedStat.textContent = (hashSpeed / 1000000000).toFixed(1) + ' GH/s';
+            } else if (hashSpeed > 1000000) {
+                speedStat.textContent = (hashSpeed / 1000000).toFixed(1) + ' MH/s';
+            } else if (hashSpeed > 1000) {
+                speedStat.textContent = (hashSpeed / 1000).toFixed(1) + ' KH/s';
+            } else {
+                speedStat.textContent = hashSpeed + ' H/s';
+            }
+        }
+
+        function delay(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        // Update speed periodically while cracking
+        setInterval(() => {
+            if (cracking && hashSpeed > 0) {
+                // Add some variation to speed
+                const variation = (Math.random() - 0.5) * hashSpeed * 0.1;
+                hashSpeed = Math.max(0, hashSpeed + variation);
+                updateSpeed();
+            }
+        }, 500);
+
+        // Nebula animation
+        const nebulaCanvas = document.getElementById('nebulaCanvas');
+        const nebulaCtx = nebulaCanvas.getContext('2d');
+        const starsCanvas = document.getElementById('starsCanvas');
+        const starsCtx = starsCanvas.getContext('2d');
+
+        function resizeCanvas() {
+            nebulaCanvas.width = window.innerWidth;
+            nebulaCanvas.height = window.innerHeight;
+            starsCanvas.width = window.innerWidth;
+            starsCanvas.height = window.innerHeight;
+        }
+
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        // Create nebula effect
+        function createNebula() {
+            const gradient = nebulaCtx.createRadialGradient(
+                nebulaCanvas.width * 0.3, nebulaCanvas.height * 0.3, 0,
+                nebulaCanvas.width * 0.3, nebulaCanvas.height * 0.3, nebulaCanvas.width * 0.6
+            );
+            gradient.addColorStop(0, 'rgba(0, 255, 0, 0.3)');
+            gradient.addColorStop(0.5, 'rgba(191, 0, 255, 0.2)');
+            gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
+
+            nebulaCtx.fillStyle = gradient;
+            nebulaCtx.fillRect(0, 0, nebulaCanvas.width, nebulaCanvas.height);
+
+            const gradient2 = nebulaCtx.createRadialGradient(
+                nebulaCanvas.width * 0.7, nebulaCanvas.height * 0.6, 0,
+                nebulaCanvas.width * 0.7, nebulaCanvas.height * 0.6, nebulaCanvas.width * 0.4
+            );
+            gradient2.addColorStop(0, 'rgba(191, 0, 255, 0.3)');
+            gradient2.addColorStop(0.5, 'rgba(0, 255, 0, 0.1)');
+            gradient2.addColorStop(1, 'rgba(0, 0, 0, 0)');
+
+            nebulaCtx.fillStyle = gradient2;
+            nebulaCtx.fillRect(0, 0, nebulaCanvas.width, nebulaCanvas.height);
+        }
+
+        // Create stars
+        const stars = [];
+        for (let i = 0; i < 2500; i++) {
+            stars.push({
+                x: Math.random() * starsCanvas.width,
+                y: Math.random() * starsCanvas.height,
+                radius: Math.random() * 1.5,
+                opacity: Math.random(),
+                speed: Math.random() * 0.5 + 0.1,
+                color: Math.random() > 0.5 ? 'rgba(0, 255, 0,' : 'rgba(191, 0, 255,'
+            });
+        }
+
+        function animateStars() {
+            starsCtx.clearRect(0, 0, starsCanvas.width, starsCanvas.height);
+
+            stars.forEach(star => {
+                star.opacity += (Math.random() - 0.5) * 0.1;
+                star.opacity = Math.max(0.1, Math.min(1, star.opacity));
+
+                starsCtx.beginPath();
+                starsCtx.arc(star.x, star.y, star.radius, 0, Math.PI * 2);
+                starsCtx.fillStyle = star.color + star.opacity + ')';
+                starsCtx.fill();
+
+                star.y += star.speed;
+                if (star.y > starsCanvas.height) {
+                    star.y = 0;
+                    star.x = Math.random() * starsCanvas.width;
+                }
+            });
+
+            requestAnimationFrame(animateStars);
+        }
+
+        // Initialize
+        createNebula();
+        animateStars();
+    </script>
+</body>
+</html>

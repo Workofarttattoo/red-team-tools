@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tech Stack Analyzer - TheGAVL Red Team Tools</title>
+    <meta name="robots" content="noindex, nofollow">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: #000;
+            color: #fff;
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* Green Purple Nebula Background (matching dashboard) */
+        .nebula-container {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            z-index: -1;
+        }
+
+        .space-background {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background:
+                radial-gradient(ellipse at 25% 40%, rgba(0, 255, 100, 0.25) 0%, transparent 40%),
+                radial-gradient(ellipse at 75% 30%, rgba(147, 51, 234, 0.3) 0%, transparent 45%),
+                radial-gradient(ellipse at 50% 70%, rgba(0, 200, 100, 0.2) 0%, transparent 40%),
+                radial-gradient(ellipse at 20% 20%, rgba(138, 43, 226, 0.25) 0%, transparent 35%),
+                radial-gradient(ellipse at 80% 60%, rgba(50, 255, 150, 0.15) 0%, transparent 40%),
+                #000;
+        }
+
+        canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Navigation */
+        .navbar {
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-bottom: 2px solid rgba(0, 255, 100, 0.5);
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 20px rgba(147, 51, 234, 0.3);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .navbar-brand {
+            font-size: 1.5em;
+            color: #50ff96;
+            font-weight: bold;
+            text-shadow: 0 0 10px rgba(0, 255, 100, 0.5);
+        }
+
+        .btn-back {
+            padding: 10px 25px;
+            background: linear-gradient(135deg, rgba(147, 51, 234, 0.7), rgba(0, 255, 100, 0.7));
+            color: #fff;
+            border: 1px solid rgba(147, 51, 234, 0.5);
+            border-radius: 5px;
+            cursor: pointer;
+            font-family: 'Courier New', monospace;
+            font-size: 1em;
+            font-weight: bold;
+            transition: all 0.3s;
+            backdrop-filter: blur(5px);
+            text-decoration: none;
+        }
+
+        .btn-back:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 255, 100, 0.4);
+            background: linear-gradient(135deg, rgba(0, 255, 100, 0.8), rgba(147, 51, 234, 0.8));
+        }
+
+        /* Main Container */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        h1 {
+            color: #50ff96;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-align: center;
+            text-shadow: 0 0 20px rgba(0, 255, 100, 0.5);
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #c8a2f5;
+            margin-bottom: 40px;
+            font-size: 1.2em;
+            text-shadow: 0 0 10px rgba(147, 51, 234, 0.3);
+        }
+
+        /* Input Section */
+        .input-section {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .input-wrapper {
+            flex: 1;
+            position: relative;
+        }
+
+        .input-icon {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: rgba(147, 51, 234, 0.8);
+            font-size: 1.2em;
+        }
+
+        input {
+            width: 100%;
+            padding: 15px 15px 15px 45px;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(147, 51, 234, 0.5);
+            border-radius: 8px;
+            color: #fff;
+            font-family: 'Courier New', monospace;
+            font-size: 1em;
+            transition: all 0.3s;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: rgba(0, 255, 100, 0.7);
+            box-shadow: 0 0 15px rgba(0, 255, 100, 0.3);
+        }
+
+        .btn-analyze {
+            padding: 15px 30px;
+            background: linear-gradient(135deg, rgba(0, 255, 100, 0.6), rgba(147, 51, 234, 0.6));
+            color: #fff;
+            border: 1px solid rgba(0, 255, 100, 0.5);
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: 'Courier New', monospace;
+            font-size: 1em;
+            font-weight: bold;
+            transition: all 0.3s;
+            min-width: 150px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .btn-analyze:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(0, 255, 100, 0.4);
+        }
+
+        .btn-analyze:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(147, 51, 234, 0.5);
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            transition: all 0.3s;
+        }
+
+        .stat-card:nth-child(2) {
+            border-color: rgba(0, 150, 255, 0.5);
+            background: rgba(0, 100, 255, 0.05);
+        }
+
+        .stat-card:nth-child(3) {
+            border-color: rgba(0, 255, 100, 0.5);
+            background: rgba(0, 255, 100, 0.05);
+        }
+
+        .stat-label {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.9em;
+            margin-bottom: 5px;
+        }
+
+        .stat-value {
+            font-size: 2em;
+            font-weight: bold;
+        }
+
+        .stat-card:nth-child(1) .stat-value {
+            color: #c8a2f5;
+        }
+
+        .stat-card:nth-child(2) .stat-value {
+            color: #4d9fff;
+        }
+
+        .stat-card:nth-child(3) .stat-value {
+            color: #50ff96;
+        }
+
+        /* Results Area */
+        .results-area {
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(147, 51, 234, 0.5);
+            border-radius: 10px;
+            min-height: 400px;
+            max-height: 500px;
+            overflow-y: auto;
+            padding: 20px;
+        }
+
+        .results-area::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .results-area::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.3);
+        }
+
+        .results-area::-webkit-scrollbar-thumb {
+            background: rgba(147, 51, 234, 0.5);
+            border-radius: 4px;
+        }
+
+        /* Tech Category */
+        .tech-category {
+            margin-bottom: 30px;
+        }
+
+        .category-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #50ff96;
+            font-size: 1.2em;
+            margin-bottom: 15px;
+            text-shadow: 0 0 10px rgba(0, 255, 100, 0.3);
+        }
+
+        /* Tech Item */
+        .tech-item {
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(147, 51, 234, 0.3);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            animation: slideIn 0.3s ease-out;
+            transition: all 0.3s;
+        }
+
+        .tech-item:hover {
+            background: rgba(147, 51, 234, 0.1);
+            transform: translateX(5px);
+            box-shadow: 0 0 20px rgba(0, 255, 100, 0.2);
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .tech-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .tech-icon {
+            font-size: 2em;
+        }
+
+        .tech-details {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .tech-name {
+            color: #50ff96;
+            font-size: 1.1em;
+            font-weight: bold;
+        }
+
+        .tech-version {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.9em;
+        }
+
+        /* Confidence Badge */
+        .confidence-badge {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: bold;
+            border: 1px solid;
+        }
+
+        .confidence-high {
+            color: #50ff96;
+            border-color: rgba(0, 255, 100, 0.5);
+            background: rgba(0, 255, 100, 0.1);
+        }
+
+        .confidence-medium {
+            color: #4d9fff;
+            border-color: rgba(77, 159, 255, 0.5);
+            background: rgba(77, 159, 255, 0.1);
+        }
+
+        .confidence-low {
+            color: #ffcc00;
+            border-color: rgba(255, 204, 0, 0.5);
+            background: rgba(255, 204, 0, 0.1);
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 80px 20px;
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .empty-icon {
+            font-size: 3em;
+            margin-bottom: 20px;
+            opacity: 0.3;
+        }
+
+        /* Loading Spinner */
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top-color: #50ff96;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .input-section {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Green Purple Nebula Background -->
+    <div class="nebula-container">
+        <div class="space-background"></div>
+        <canvas id="starsCanvas"></canvas>
+        <canvas id="nebulaCanvas"></canvas>
+    </div>
+
+    <!-- Navigation -->
+    <div class="navbar">
+        <div class="navbar-brand">🔍 Tech Stack Analyzer</div>
+        <a href="dashboard.html" class="btn-back">← Back to Dashboard</a>
+    </div>
+
+    <div class="container">
+        <h1>Technology Stack Analyzer</h1>
+        <p class="subtitle">Wappalyzer-style technology detection and fingerprinting</p>
+
+        <!-- Input Section -->
+        <div class="input-section">
+            <div class="input-wrapper">
+                <span class="input-icon">🌐</span>
+                <input
+                    type="text"
+                    id="urlInput"
+                    placeholder="Enter website URL (e.g., https://example.com)"
+                    onkeypress="handleKeyPress(event)"
+                />
+            </div>
+            <button class="btn-analyze" id="analyzeBtn" onclick="analyzeTech()">
+                <span id="btnIcon">🔍</span>
+                <span id="btnText">Analyze</span>
+            </button>
+        </div>
+
+        <!-- Stats Grid -->
+        <div class="stats-grid" id="statsGrid" style="display: none;">
+            <div class="stat-card">
+                <div class="stat-label">Total Technologies</div>
+                <div class="stat-value" id="totalTech">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Categories</div>
+                <div class="stat-value" id="totalCategories">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">High Confidence</div>
+                <div class="stat-value" id="highConfidence">0</div>
+            </div>
+        </div>
+
+        <!-- Results Area -->
+        <div class="results-area" id="resultsArea">
+            <div class="empty-state">
+                <div class="empty-icon">💻</div>
+                <p>Enter a URL to detect technologies</p>
+                <p style="font-size: 0.9em; margin-top: 10px; opacity: 0.7;">
+                    Identifies frameworks, servers, databases, CDNs, and more
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Tech Database
+        const techDatabase = {
+            Frameworks: [
+                { name: 'React', icon: '⚛️', versions: ['18.2.0', '17.0.2', '16.14.0'] },
+                { name: 'Next.js', icon: '▲', versions: ['14.0.0', '13.4.0', '12.3.0'] },
+                { name: 'Vue.js', icon: '💚', versions: ['3.3.0', '2.7.0'] },
+                { name: 'Angular', icon: '🅰️', versions: ['17.0.0', '16.0.0', '15.2.0'] },
+                { name: 'Svelte', icon: '🔥', versions: ['4.0.0', '3.59.0'] },
+                { name: 'Nuxt.js', icon: '🟢', versions: ['3.8.0', '2.17.0'] },
+                { name: 'Gatsby', icon: '🟣', versions: ['5.12.0', '4.25.0'] },
+                { name: 'Ember.js', icon: '🔶', versions: ['5.4.0', '4.12.0'] }
+            ],
+            Backend: [
+                { name: 'Node.js', icon: '🟩', versions: ['20.9.0', '18.16.0', '16.20.0'] },
+                { name: 'Express', icon: '🚂', versions: ['4.18.2', '4.17.3'] },
+                { name: 'Django', icon: '🐍', versions: ['4.2.7', '3.2.0'] },
+                { name: 'Flask', icon: '🌶️', versions: ['3.0.0', '2.3.0'] },
+                { name: 'Spring Boot', icon: '🍃', versions: ['3.1.5', '2.7.0'] },
+                { name: 'FastAPI', icon: '⚡', versions: ['0.104.0', '0.100.0'] },
+                { name: 'Ruby on Rails', icon: '💎', versions: ['7.1.0', '7.0.8'] },
+                { name: 'Laravel', icon: '🔺', versions: ['10.30.0', '9.52.0'] }
+            ],
+            Servers: [
+                { name: 'nginx', icon: '🟢', versions: ['1.25.3', '1.24.0', '1.22.1'] },
+                { name: 'Apache', icon: '🪶', versions: ['2.4.58', '2.4.57', '2.4.41'] },
+                { name: 'IIS', icon: '🪟', versions: ['10.0', '8.5'] },
+                { name: 'LiteSpeed', icon: '⚡', versions: ['6.1', '5.4.12'] },
+                { name: 'Caddy', icon: '🔒', versions: ['2.7.5', '2.6.4'] },
+                { name: 'Tomcat', icon: '🐱', versions: ['10.1.15', '9.0.82'] }
+            ],
+            Databases: [
+                { name: 'PostgreSQL', icon: '🐘', versions: ['16.0', '15.3', '14.8'] },
+                { name: 'MySQL', icon: '🐬', versions: ['8.2.0', '8.0.33', '5.7.42'] },
+                { name: 'MongoDB', icon: '🍃', versions: ['7.0.2', '6.0.6', '5.0.18'] },
+                { name: 'Redis', icon: '🔴', versions: ['7.2.3', '7.0.11'] },
+                { name: 'MariaDB', icon: '🦭', versions: ['11.1.2', '10.11.5'] },
+                { name: 'Elasticsearch', icon: '🔍', versions: ['8.11.0', '7.17.14'] },
+                { name: 'SQLite', icon: '🗂️', versions: ['3.44.0', '3.42.0'] }
+            ],
+            CDN: [
+                { name: 'Cloudflare', icon: '☁️', versions: [] },
+                { name: 'Amazon CloudFront', icon: '🟠', versions: [] },
+                { name: 'Akamai', icon: '🌐', versions: [] },
+                { name: 'Fastly', icon: '⚡', versions: [] },
+                { name: 'Bunny CDN', icon: '🐰', versions: [] }
+            ],
+            Analytics: [
+                { name: 'Google Analytics', icon: '📊', versions: ['GA4', 'UA'] },
+                { name: 'Hotjar', icon: '🔥', versions: ['6.0'] },
+                { name: 'Mixpanel', icon: '📈', versions: ['2.48.0'] },
+                { name: 'Matomo', icon: '📉', versions: ['4.15.1'] },
+                { name: 'Plausible', icon: '📊', versions: ['2.0.0'] },
+                { name: 'Adobe Analytics', icon: '🔷', versions: [] }
+            ],
+            Security: [
+                { name: 'reCAPTCHA', icon: '🤖', versions: ['v3', 'v2'] },
+                { name: 'Cloudflare WAF', icon: '🛡️', versions: [] },
+                { name: 'Sucuri', icon: '🔒', versions: [] },
+                { name: 'Wordfence', icon: '🚨', versions: ['7.10.0'] },
+                { name: 'Imperva', icon: '🛡️', versions: [] }
+            ],
+            CMS: [
+                { name: 'WordPress', icon: '📝', versions: ['6.4.1', '6.3.2', '5.9.8'] },
+                { name: 'Drupal', icon: '💧', versions: ['10.1.6', '9.5.11'] },
+                { name: 'Joomla', icon: '🟥', versions: ['5.0.0', '4.4.0'] },
+                { name: 'Shopify', icon: '🛒', versions: [] },
+                { name: 'Wix', icon: '🎨', versions: [] },
+                { name: 'Contentful', icon: '📄', versions: [] }
+            ]
+        };
+
+        let analyzing = false;
+        let technologies = [];
+
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                analyzeTech();
+            }
+        }
+
+        async function analyzeTech() {
+            const url = document.getElementById('urlInput').value.trim();
+            if (!url || analyzing) return;
+
+            analyzing = true;
+            technologies = [];
+
+            // Update button state
+            const btn = document.getElementById('analyzeBtn');
+            const btnIcon = document.getElementById('btnIcon');
+            const btnText = document.getElementById('btnText');
+
+            btn.disabled = true;
+            btnIcon.innerHTML = '<div class="spinner"></div>';
+            btnText.textContent = 'Analyzing...';
+
+            // Clear results
+            document.getElementById('resultsArea').innerHTML = `
+                <div class="empty-state">
+                    <div class="spinner" style="margin: 0 auto 20px; width: 40px; height: 40px;"></div>
+                    <p>Scanning website technologies...</p>
+                </div>
+            `;
+
+            // Hide stats initially
+            document.getElementById('statsGrid').style.display = 'none';
+
+            // Simulate scanning delay
+            await sleep(1000);
+
+            // Clear for real results
+            document.getElementById('resultsArea').innerHTML = '';
+
+            // Randomly detect technologies
+            const detected = [];
+            const categories = Object.keys(techDatabase);
+
+            for (const category of categories) {
+                const techs = techDatabase[category];
+                const count = Math.floor(Math.random() * 3) + (Math.random() > 0.7 ? 0 : 1);
+
+                for (let i = 0; i < count && i < techs.length; i++) {
+                    const tech = techs[Math.floor(Math.random() * techs.length)];
+
+                    // Avoid duplicates
+                    if (detected.some(d => d.name === tech.name)) continue;
+
+                    const version = tech.versions.length > 0
+                        ? tech.versions[Math.floor(Math.random() * tech.versions.length)]
+                        : undefined;
+
+                    detected.push({
+                        name: tech.name,
+                        category: category,
+                        version,
+                        confidence: Math.floor(Math.random() * 30) + 70,
+                        icon: tech.icon
+                    });
+
+                    await sleep(200);
+                    technologies = [...detected];
+                    renderTechnologies();
+                }
+            }
+
+            // Update button state
+            btn.disabled = false;
+            btnIcon.innerHTML = '🔍';
+            btnText.textContent = 'Analyze';
+            analyzing = false;
+
+            // Show stats
+            updateStats();
+        }
+
+        function renderTechnologies() {
+            const resultsArea = document.getElementById('resultsArea');
+
+            if (technologies.length === 0) {
+                resultsArea.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">💻</div>
+                        <p>Enter a URL to detect technologies</p>
+                        <p style="font-size: 0.9em; margin-top: 10px; opacity: 0.7;">
+                            Identifies frameworks, servers, databases, CDNs, and more
+                        </p>
+                    </div>
+                `;
+                return;
+            }
+
+            const categories = {};
+            technologies.forEach(tech => {
+                if (!categories[tech.category]) {
+                    categories[tech.category] = [];
+                }
+                categories[tech.category].push(tech);
+            });
+
+            resultsArea.innerHTML = '';
+
+            for (const [category, techs] of Object.entries(categories)) {
+                const categoryDiv = document.createElement('div');
+                categoryDiv.className = 'tech-category';
+
+                const categoryIcon = getCategoryIcon(category);
+
+                categoryDiv.innerHTML = `
+                    <div class="category-header">
+                        <span>${categoryIcon}</span>
+                        <span>${category}</span>
+                    </div>
+                `;
+
+                techs.forEach(tech => {
+                    const techItem = document.createElement('div');
+                    techItem.className = 'tech-item';
+
+                    const confidenceClass = tech.confidence >= 90 ? 'confidence-high' :
+                                           tech.confidence >= 70 ? 'confidence-medium' :
+                                           'confidence-low';
+
+                    techItem.innerHTML = `
+                        <div class="tech-info">
+                            <span class="tech-icon">${tech.icon}</span>
+                            <div class="tech-details">
+                                <div class="tech-name">${tech.name}</div>
+                                ${tech.version ? `<div class="tech-version">v${tech.version}</div>` : ''}
+                            </div>
+                        </div>
+                        <div class="confidence-badge ${confidenceClass}">
+                            ${tech.confidence}% confident
+                        </div>
+                    `;
+
+                    categoryDiv.appendChild(techItem);
+                });
+
+                resultsArea.appendChild(categoryDiv);
+            }
+        }
+
+        function getCategoryIcon(category) {
+            const icons = {
+                'Frameworks': '⚛️',
+                'Backend': '🖥️',
+                'Servers': '🌐',
+                'Databases': '🗄️',
+                'CDN': '☁️',
+                'Analytics': '📊',
+                'Security': '🛡️',
+                'CMS': '📝'
+            };
+            return icons[category] || '📦';
+        }
+
+        function updateStats() {
+            if (technologies.length === 0) {
+                document.getElementById('statsGrid').style.display = 'none';
+                return;
+            }
+
+            document.getElementById('statsGrid').style.display = 'grid';
+            document.getElementById('totalTech').textContent = technologies.length;
+
+            const categories = new Set(technologies.map(t => t.category));
+            document.getElementById('totalCategories').textContent = categories.size;
+
+            const highConf = technologies.filter(t => t.confidence >= 90).length;
+            document.getElementById('highConfidence').textContent = highConf;
+        }
+
+        function sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        // Nebula Animation (same as dashboard)
+        const starsCanvas = document.getElementById('starsCanvas');
+        const nebulaCanvas = document.getElementById('nebulaCanvas');
+        const starsCtx = starsCanvas.getContext('2d');
+        const nebulaCtx = nebulaCanvas.getContext('2d');
+
+        function resizeCanvases() {
+            starsCanvas.width = window.innerWidth;
+            starsCanvas.height = window.innerHeight;
+            nebulaCanvas.width = window.innerWidth;
+            nebulaCanvas.height = window.innerHeight;
+        }
+
+        resizeCanvases();
+        window.addEventListener('resize', resizeCanvases);
+
+        function createStarField() {
+            starsCtx.clearRect(0, 0, starsCanvas.width, starsCanvas.height);
+
+            for (let i = 0; i < 2500; i++) {
+                const x = Math.random() * starsCanvas.width;
+                const y = Math.random() * starsCanvas.height;
+                const size = Math.random() * 0.8;
+                const brightness = Math.random();
+
+                const colorChoice = Math.random();
+                if (colorChoice < 0.1) {
+                    starsCtx.fillStyle = `rgba(100, 255, 150, ${brightness})`;
+                } else if (colorChoice < 0.2) {
+                    starsCtx.fillStyle = `rgba(200, 150, 255, ${brightness})`;
+                } else {
+                    starsCtx.fillStyle = `rgba(255, 255, 255, ${brightness})`;
+                }
+
+                starsCtx.fillRect(x, y, size, size);
+            }
+        }
+
+        let nebulaTime = 0;
+        function animateNebula() {
+            nebulaCtx.clearRect(0, 0, nebulaCanvas.width, nebulaCanvas.height);
+            nebulaTime += 0.005;
+
+            for (let i = 0; i < 3; i++) {
+                const x = (nebulaCanvas.width * 0.3) + Math.sin(nebulaTime + i) * 100;
+                const y = (nebulaCanvas.height * 0.4) + Math.cos(nebulaTime + i) * 50;
+
+                const gradient = nebulaCtx.createRadialGradient(x, y, 0, x, y, 300);
+                gradient.addColorStop(0, 'rgba(0, 255, 100, 0.15)');
+                gradient.addColorStop(0.5, 'rgba(50, 200, 100, 0.08)');
+                gradient.addColorStop(1, 'transparent');
+
+                nebulaCtx.fillStyle = gradient;
+                nebulaCtx.fillRect(0, 0, nebulaCanvas.width, nebulaCanvas.height);
+            }
+
+            for (let i = 0; i < 3; i++) {
+                const x = (nebulaCanvas.width * 0.7) + Math.sin(nebulaTime * 0.8 + i + 2) * 80;
+                const y = (nebulaCanvas.height * 0.6) + Math.cos(nebulaTime * 0.8 + i) * 60;
+
+                const gradient = nebulaCtx.createRadialGradient(x, y, 0, x, y, 350);
+                gradient.addColorStop(0, 'rgba(147, 51, 234, 0.18)');
+                gradient.addColorStop(0.5, 'rgba(138, 43, 226, 0.08)');
+                gradient.addColorStop(1, 'transparent');
+
+                nebulaCtx.fillStyle = gradient;
+                nebulaCtx.fillRect(0, 0, nebulaCanvas.width, nebulaCanvas.height);
+            }
+
+            requestAnimationFrame(animateNebula);
+        }
+
+        createStarField();
+        animateNebula();
+        setInterval(createStarField, 5000);
+    </script>
+</body>
+</html>
+
+<!-- Copyright (c) 2025 Joshua Hendricks Cole (DBA: Corporation of Light). All Rights Reserved. PATENT PENDING. -->

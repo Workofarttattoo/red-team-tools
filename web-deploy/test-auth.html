@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auth Test - TheGAVL Red Team Tools</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/auth-config.js"></script>
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            background: #000;
+            color: #0f0;
+            padding: 40px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        h1 { color: #0f0; margin-bottom: 30px; }
+        .test-section {
+            background: rgba(0, 255, 0, 0.05);
+            border: 1px solid #0f0;
+            border-radius: 5px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .success { color: #0f0; }
+        .error { color: #f00; }
+        .warning { color: #ff0; }
+        .info { color: #0ff; }
+        pre {
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid #333;
+            padding: 10px;
+            border-radius: 3px;
+            overflow-x: auto;
+        }
+        button {
+            background: #0f0;
+            color: #000;
+            border: none;
+            padding: 10px 20px;
+            margin: 5px;
+            cursor: pointer;
+            font-family: inherit;
+            font-weight: bold;
+            border-radius: 3px;
+        }
+        button:hover {
+            background: #0a0;
+        }
+        input {
+            background: #111;
+            color: #0f0;
+            border: 1px solid #0f0;
+            padding: 8px;
+            margin: 5px;
+            font-family: inherit;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 Authentication System Test</h1>
+
+    <div class="test-section">
+        <h2>1. Configuration Status</h2>
+        <div id="config-status"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>2. Supabase Connection</h2>
+        <div id="connection-status"></div>
+        <button onclick="testConnection()">Test Connection</button>
+    </div>
+
+    <div class="test-section">
+        <h2>3. Test Sign Up</h2>
+        <input type="email" id="signup-email" placeholder="test@example.com" value="test@example.com">
+        <input type="password" id="signup-password" placeholder="Password123!" value="Password123!">
+        <button onclick="testSignUp()">Test Sign Up</button>
+        <div id="signup-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>4. Test Sign In</h2>
+        <input type="email" id="signin-email" placeholder="test@example.com" value="test@example.com">
+        <input type="password" id="signin-password" placeholder="Password123!" value="Password123!">
+        <button onclick="testSignIn()">Test Sign In</button>
+        <div id="signin-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>5. Current Session</h2>
+        <button onclick="checkSession()">Check Session</button>
+        <div id="session-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>6. Test Sign Out</h2>
+        <button onclick="testSignOut()">Test Sign Out</button>
+        <div id="signout-result"></div>
+    </div>
+
+    <script>
+        // Initialize Supabase client
+        let supabase = null;
+
+        // Check configuration
+        function checkConfig() {
+            const configDiv = document.getElementById('config-status');
+            let html = '';
+
+            // Check Supabase URL
+            if (AUTH_CONFIG.SUPABASE_URL && AUTH_CONFIG.SUPABASE_URL !== 'https://your-project.supabase.co') {
+                html += `<p class="success">✅ Supabase URL: ${AUTH_CONFIG.SUPABASE_URL}</p>`;
+            } else {
+                html += `<p class="error">❌ Supabase URL not configured</p>`;
+            }
+
+            // Check API Key
+            if (AUTH_CONFIG.SUPABASE_ANON_KEY && AUTH_CONFIG.SUPABASE_ANON_KEY !== 'your-anon-key-here') {
+                html += `<p class="success">✅ API Key: ${AUTH_CONFIG.SUPABASE_ANON_KEY.substring(0, 20)}...</p>`;
+            } else {
+                html += `<p class="error">❌ API Key not configured</p>`;
+            }
+
+            // Check other settings
+            html += `<p class="info">📧 Email Verification: ${AUTH_CONFIG.REQUIRE_EMAIL_VERIFICATION ? 'Required' : 'Not Required'}</p>`;
+            html += `<p class="info">🔐 MFA: ${AUTH_CONFIG.ENABLE_MFA ? 'Enabled' : 'Disabled'}</p>`;
+            html += `<p class="info">🌐 OAuth Google: ${AUTH_CONFIG.OAUTH_PROVIDERS.google ? 'Enabled' : 'Disabled'}</p>`;
+            html += `<p class="info">👥 Sign Up: ${AUTH_CONFIG.FEATURES.allowSignup ? 'Allowed' : 'Disabled'}</p>`;
+
+            configDiv.innerHTML = html;
+
+            // Initialize Supabase
+            if (window.supabase && AUTH_CONFIG.SUPABASE_URL && AUTH_CONFIG.SUPABASE_ANON_KEY) {
+                const { createClient } = window.supabase;
+                supabase = createClient(AUTH_CONFIG.SUPABASE_URL, AUTH_CONFIG.SUPABASE_ANON_KEY);
+                configDiv.innerHTML += '<p class="success">✅ Supabase client initialized</p>';
+            } else {
+                configDiv.innerHTML += '<p class="error">❌ Failed to initialize Supabase client</p>';
+            }
+        }
+
+        // Test connection to Supabase
+        async function testConnection() {
+            const statusDiv = document.getElementById('connection-status');
+
+            if (!supabase) {
+                statusDiv.innerHTML = '<p class="error">❌ Supabase client not initialized</p>';
+                return;
+            }
+
+            try {
+                statusDiv.innerHTML = '<p class="info">⏳ Testing connection...</p>';
+
+                // Try to get the current session (should work even if not logged in)
+                const { data, error } = await supabase.auth.getSession();
+
+                if (error) {
+                    statusDiv.innerHTML = `<p class="error">❌ Connection failed: ${error.message}</p>`;
+                } else {
+                    statusDiv.innerHTML = '<p class="success">✅ Successfully connected to Supabase!</p>';
+                    statusDiv.innerHTML += `<p class="info">Session: ${data.session ? 'Active' : 'None'}</p>`;
+                }
+            } catch (err) {
+                statusDiv.innerHTML = `<p class="error">❌ Connection error: ${err.message}</p>`;
+            }
+        }
+
+        // Test sign up
+        async function testSignUp() {
+            const email = document.getElementById('signup-email').value;
+            const password = document.getElementById('signup-password').value;
+            const resultDiv = document.getElementById('signup-result');
+
+            if (!supabase) {
+                resultDiv.innerHTML = '<p class="error">❌ Supabase client not initialized</p>';
+                return;
+            }
+
+            try {
+                resultDiv.innerHTML = '<p class="info">⏳ Signing up...</p>';
+
+                const { data, error } = await supabase.auth.signUp({
+                    email: email,
+                    password: password
+                });
+
+                if (error) {
+                    resultDiv.innerHTML = `<p class="error">❌ Sign up failed: ${error.message}</p>`;
+                } else {
+                    resultDiv.innerHTML = '<p class="success">✅ Sign up successful!</p>';
+                    if (AUTH_CONFIG.REQUIRE_EMAIL_VERIFICATION) {
+                        resultDiv.innerHTML += '<p class="warning">⚠️ Check your email to verify your account</p>';
+                    }
+                    resultDiv.innerHTML += `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+                }
+            } catch (err) {
+                resultDiv.innerHTML = `<p class="error">❌ Sign up error: ${err.message}</p>`;
+            }
+        }
+
+        // Test sign in
+        async function testSignIn() {
+            const email = document.getElementById('signin-email').value;
+            const password = document.getElementById('signin-password').value;
+            const resultDiv = document.getElementById('signin-result');
+
+            if (!supabase) {
+                resultDiv.innerHTML = '<p class="error">❌ Supabase client not initialized</p>';
+                return;
+            }
+
+            try {
+                resultDiv.innerHTML = '<p class="info">⏳ Signing in...</p>';
+
+                const { data, error } = await supabase.auth.signInWithPassword({
+                    email: email,
+                    password: password
+                });
+
+                if (error) {
+                    resultDiv.innerHTML = `<p class="error">❌ Sign in failed: ${error.message}</p>`;
+                } else {
+                    resultDiv.innerHTML = '<p class="success">✅ Sign in successful!</p>';
+                    resultDiv.innerHTML += `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+                }
+            } catch (err) {
+                resultDiv.innerHTML = `<p class="error">❌ Sign in error: ${err.message}</p>`;
+            }
+        }
+
+        // Check current session
+        async function checkSession() {
+            const resultDiv = document.getElementById('session-result');
+
+            if (!supabase) {
+                resultDiv.innerHTML = '<p class="error">❌ Supabase client not initialized</p>';
+                return;
+            }
+
+            try {
+                const { data: { session } } = await supabase.auth.getSession();
+
+                if (session) {
+                    resultDiv.innerHTML = '<p class="success">✅ Active session found</p>';
+                    resultDiv.innerHTML += `<pre>${JSON.stringify(session, null, 2)}</pre>`;
+                } else {
+                    resultDiv.innerHTML = '<p class="info">ℹ️ No active session</p>';
+                }
+            } catch (err) {
+                resultDiv.innerHTML = `<p class="error">❌ Session check error: ${err.message}</p>`;
+            }
+        }
+
+        // Test sign out
+        async function testSignOut() {
+            const resultDiv = document.getElementById('signout-result');
+
+            if (!supabase) {
+                resultDiv.innerHTML = '<p class="error">❌ Supabase client not initialized</p>';
+                return;
+            }
+
+            try {
+                resultDiv.innerHTML = '<p class="info">⏳ Signing out...</p>';
+
+                const { error } = await supabase.auth.signOut();
+
+                if (error) {
+                    resultDiv.innerHTML = `<p class="error">❌ Sign out failed: ${error.message}</p>`;
+                } else {
+                    resultDiv.innerHTML = '<p class="success">✅ Signed out successfully</p>';
+                }
+            } catch (err) {
+                resultDiv.innerHTML = `<p class="error">❌ Sign out error: ${err.message}</p>`;
+            }
+        }
+
+        // Initialize on load
+        window.addEventListener('load', () => {
+            checkConfig();
+        });
+    </script>
+</body>
+</html>

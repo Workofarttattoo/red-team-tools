@@ -1,0 +1,940 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Console Monitor - Red Team Tools</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: #0a0a0a;
+            color: #00ff00;
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Nebula Background */
+        #nebulaCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -2;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a0a2a 50%, #0a1a0a 100%);
+        }
+
+        #starsCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+
+        /* Container */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            position: relative;
+            z-index: 10;
+        }
+
+        /* Header */
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+            animation: fadeIn 1s ease-out;
+        }
+
+        .title {
+            font-size: 3rem;
+            background: linear-gradient(135deg, #00ff00 0%, #bf00ff 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 1rem;
+            text-shadow: 0 0 30px rgba(0, 255, 0, 0.5);
+        }
+
+        .subtitle {
+            color: #888;
+            font-size: 1.2rem;
+        }
+
+        /* Stats Bar */
+        .stats-bar {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+            animation: slideDown 0.8s ease-out;
+        }
+
+        .stat-card {
+            background: rgba(20, 20, 30, 0.9);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(0, 255, 0, 0.3);
+            border-radius: 5px;
+            padding: 1rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0, 255, 0, 0.1), transparent);
+            animation: sweep 3s infinite;
+        }
+
+        @keyframes sweep {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+
+        .stat-label {
+            font-size: 0.8rem;
+            color: #888;
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #00ff00;
+        }
+
+        .stat-value.danger {
+            color: #ff3333;
+        }
+
+        .stat-value.warning {
+            color: #ffaa00;
+        }
+
+        /* Control Panel */
+        .control-panel {
+            background: rgba(20, 20, 30, 0.9);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(0, 255, 0, 0.3);
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            animation: slideUp 0.8s ease-out;
+        }
+
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .control-group {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .control-group label {
+            color: #00ff00;
+            font-size: 0.9rem;
+        }
+
+        .control-group select,
+        .control-group input {
+            background: rgba(10, 10, 20, 0.8);
+            border: 1px solid rgba(0, 255, 0, 0.3);
+            color: #00ff00;
+            padding: 0.5rem;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+            border-bottom: 1px solid rgba(0, 255, 0, 0.3);
+        }
+
+        .tab {
+            background: transparent;
+            border: 1px solid transparent;
+            color: #888;
+            padding: 0.75rem 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-radius: 5px 5px 0 0;
+        }
+
+        .tab:hover {
+            background: rgba(0, 255, 0, 0.1);
+            color: #00ff00;
+        }
+
+        .tab.active {
+            background: rgba(0, 255, 0, 0.2);
+            border-color: rgba(0, 255, 0, 0.5);
+            color: #00ff00;
+            border-bottom-color: transparent;
+        }
+
+        /* Console Output */
+        .console-container {
+            background: rgba(10, 10, 20, 0.95);
+            border: 1px solid rgba(0, 255, 0, 0.3);
+            border-radius: 5px;
+            height: 500px;
+            overflow-y: auto;
+            position: relative;
+            animation: fadeIn 1s ease-out;
+        }
+
+        .console-output {
+            padding: 1rem;
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+
+        .log-entry {
+            margin-bottom: 0.5rem;
+            padding: 0.5rem;
+            border-radius: 3px;
+            animation: slideIn 0.3s ease-out;
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .log-timestamp {
+            color: #666;
+            min-width: 150px;
+        }
+
+        .log-level {
+            min-width: 60px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .log-level.info { color: #00aaff; }
+        .log-level.success { color: #00ff00; }
+        .log-level.warning { color: #ffaa00; }
+        .log-level.error { color: #ff3333; }
+        .log-level.debug { color: #bf00ff; }
+
+        .log-message {
+            flex: 1;
+            word-break: break-all;
+        }
+
+        /* Process List */
+        .process-list {
+            padding: 1rem;
+        }
+
+        .process-item {
+            display: grid;
+            grid-template-columns: 80px 200px 100px 100px 1fr;
+            gap: 1rem;
+            padding: 0.5rem;
+            border-bottom: 1px solid rgba(0, 255, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .process-item:hover {
+            background: rgba(0, 255, 0, 0.05);
+        }
+
+        .process-header {
+            font-weight: bold;
+            color: #00ff00;
+            border-bottom: 2px solid rgba(0, 255, 0, 0.5);
+            margin-bottom: 0.5rem;
+        }
+
+        /* Network Monitor */
+        .network-list {
+            padding: 1rem;
+        }
+
+        .network-item {
+            display: grid;
+            grid-template-columns: 150px 150px 100px 100px 1fr;
+            gap: 1rem;
+            padding: 0.5rem;
+            border-bottom: 1px solid rgba(0, 255, 0, 0.1);
+            animation: slideIn 0.3s ease-out;
+        }
+
+        /* Buttons */
+        .btn {
+            background: linear-gradient(135deg, #00ff00 0%, #00aa00 100%);
+            border: none;
+            color: #000;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(0, 255, 0, 0.4);
+        }
+
+        .btn.danger {
+            background: linear-gradient(135deg, #ff3333 0%, #aa0000 100%);
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        /* Status Indicator */
+        .status-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+            margin-right: 0.5rem;
+        }
+
+        .status-indicator.online {
+            background: #00ff00;
+            box-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
+        }
+
+        .status-indicator.offline {
+            background: #ff3333;
+            box-shadow: 0 0 10px rgba(255, 51, 51, 0.5);
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Scrollbar */
+        .console-container::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .console-container::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.3);
+        }
+
+        .console-container::-webkit-scrollbar-thumb {
+            background: rgba(0, 255, 0, 0.3);
+            border-radius: 4px;
+        }
+
+        .console-container::-webkit-scrollbar-thumb:hover {
+            background: rgba(0, 255, 0, 0.5);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .stats-bar {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .tabs {
+                flex-wrap: wrap;
+            }
+
+            .process-item,
+            .network-item {
+                grid-template-columns: 1fr;
+                gap: 0.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <canvas id="nebulaCanvas"></canvas>
+    <canvas id="starsCanvas"></canvas>
+
+    <div class="container">
+        <div class="header">
+            <h1 class="title">📟 Console Monitor</h1>
+            <p class="subtitle">Real-time system monitoring and log analysis</p>
+        </div>
+
+        <!-- Stats Bar -->
+        <div class="stats-bar">
+            <div class="stat-card">
+                <div class="stat-label">Events/Sec</div>
+                <div class="stat-value" id="eventsPerSec">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">CPU Usage</div>
+                <div class="stat-value" id="cpuUsage">0%</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Memory</div>
+                <div class="stat-value" id="memUsage">0%</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Network I/O</div>
+                <div class="stat-value" id="networkIO">0 KB/s</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Active Processes</div>
+                <div class="stat-value" id="processCount">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Status</div>
+                <div class="stat-value">
+                    <span class="status-indicator online"></span>
+                    <span>Online</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Control Panel -->
+        <div class="control-panel">
+            <div class="controls">
+                <div class="control-group">
+                    <label>Filter Level:</label>
+                    <select id="logLevel">
+                        <option value="all">All</option>
+                        <option value="info">Info</option>
+                        <option value="success">Success</option>
+                        <option value="warning">Warning</option>
+                        <option value="error">Error</option>
+                        <option value="debug">Debug</option>
+                    </select>
+                </div>
+                <div class="control-group">
+                    <label>Search:</label>
+                    <input type="text" id="searchFilter" placeholder="Filter logs...">
+                </div>
+                <div class="control-group">
+                    <label>Auto-scroll:</label>
+                    <input type="checkbox" id="autoScroll" checked>
+                </div>
+                <div class="btn-group">
+                    <button class="btn" onclick="clearLogs()">Clear Logs</button>
+                    <button class="btn" onclick="exportLogs()">Export</button>
+                    <button class="btn danger" id="pauseBtn" onclick="togglePause()">Pause</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="tabs">
+            <div class="tab active" onclick="switchTab('logs')">System Logs</div>
+            <div class="tab" onclick="switchTab('processes')">Processes</div>
+            <div class="tab" onclick="switchTab('network')">Network</div>
+            <div class="tab" onclick="switchTab('security')">Security Events</div>
+        </div>
+
+        <!-- Console Container -->
+        <div class="console-container">
+            <div id="logsTab" class="console-output"></div>
+            <div id="processesTab" class="process-list" style="display: none;"></div>
+            <div id="networkTab" class="network-list" style="display: none;"></div>
+            <div id="securityTab" class="console-output" style="display: none;"></div>
+        </div>
+    </div>
+
+    <script>
+        let paused = false;
+        let autoScroll = true;
+        let currentTab = 'logs';
+        let eventCount = 0;
+        let lastEventTime = Date.now();
+
+        // Log templates
+        const logTemplates = {
+            info: [
+                'System initialized successfully',
+                'Database connection established',
+                'Cache cleared',
+                'Service started on port {port}',
+                'Configuration loaded from {file}',
+                'User {user} authenticated',
+                'Backup completed successfully',
+                'API endpoint {endpoint} accessed'
+            ],
+            success: [
+                'Deployment successful',
+                'All tests passed',
+                'Security scan completed - no vulnerabilities found',
+                'File uploaded: {file}',
+                'Transaction completed: {id}',
+                'Migration executed successfully',
+                'SSL certificate renewed'
+            ],
+            warning: [
+                'High memory usage detected: {percent}%',
+                'Slow query detected: {query}',
+                'Rate limit approaching for {service}',
+                'Disk space low on {volume}',
+                'Deprecated API call to {endpoint}',
+                'Failed login attempt from {ip}'
+            ],
+            error: [
+                'Connection timeout to {service}',
+                'Failed to parse JSON: {error}',
+                'Database query failed: {query}',
+                'File not found: {path}',
+                'Permission denied: {action}',
+                'Invalid token received from {ip}'
+            ],
+            debug: [
+                'Variable {var} = {value}',
+                'Entering function: {function}',
+                'SQL Query: {query}',
+                'HTTP Request: {method} {url}',
+                'Cache hit for key: {key}',
+                'Memory allocation: {size} bytes'
+            ]
+        };
+
+        // Process data
+        const processes = [
+            { pid: 1234, name: 'nginx', cpu: '2.3', memory: '45.2', status: 'Running' },
+            { pid: 2345, name: 'postgres', cpu: '5.1', memory: '128.5', status: 'Running' },
+            { pid: 3456, name: 'redis', cpu: '0.8', memory: '32.1', status: 'Running' },
+            { pid: 4567, name: 'node', cpu: '15.2', memory: '256.3', status: 'Running' },
+            { pid: 5678, name: 'python', cpu: '8.9', memory: '92.7', status: 'Running' }
+        ];
+
+        // Generate random log entry
+        function generateLogEntry() {
+            const levels = ['info', 'success', 'warning', 'error', 'debug'];
+            const level = levels[Math.floor(Math.random() * levels.length)];
+            const templates = logTemplates[level];
+            let message = templates[Math.floor(Math.random() * templates.length)];
+
+            // Replace placeholders
+            message = message.replace(/{(\w+)}/g, (match, key) => {
+                const replacements = {
+                    port: Math.floor(Math.random() * 9000) + 1000,
+                    file: `app_${Math.floor(Math.random() * 100)}.config`,
+                    user: `user_${Math.floor(Math.random() * 1000)}`,
+                    endpoint: `/api/v1/${['users', 'data', 'auth'][Math.floor(Math.random() * 3)]}`,
+                    id: `TX${Math.floor(Math.random() * 1000000)}`,
+                    percent: Math.floor(Math.random() * 30) + 70,
+                    query: `SELECT * FROM table_${Math.floor(Math.random() * 10)}`,
+                    service: ['database', 'cache', 'api'][Math.floor(Math.random() * 3)],
+                    volume: `/dev/sda${Math.floor(Math.random() * 4) + 1}`,
+                    ip: `${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}`,
+                    error: 'Unexpected token at position ' + Math.floor(Math.random() * 100),
+                    path: `/var/log/app_${Math.floor(Math.random() * 100)}.log`,
+                    action: ['read', 'write', 'execute'][Math.floor(Math.random() * 3)],
+                    var: `var_${Math.floor(Math.random() * 100)}`,
+                    value: Math.floor(Math.random() * 1000),
+                    function: `process_${['data', 'request', 'response'][Math.floor(Math.random() * 3)]}`,
+                    method: ['GET', 'POST', 'PUT', 'DELETE'][Math.floor(Math.random() * 4)],
+                    url: `/api/${['users', 'products', 'orders'][Math.floor(Math.random() * 3)]}/${Math.floor(Math.random() * 100)}`,
+                    key: `cache_${Math.floor(Math.random() * 1000)}`,
+                    size: Math.floor(Math.random() * 10000)
+                };
+                return replacements[key] || match;
+            });
+
+            return { level, message, timestamp: new Date() };
+        }
+
+        // Add log entry to console
+        function addLogEntry(entry, container = 'logsTab') {
+            if (paused) return;
+
+            const filterLevel = document.getElementById('logLevel').value;
+            const searchTerm = document.getElementById('searchFilter').value.toLowerCase();
+
+            if (filterLevel !== 'all' && entry.level !== filterLevel) return;
+            if (searchTerm && !entry.message.toLowerCase().includes(searchTerm)) return;
+
+            const consoleOutput = document.getElementById(container);
+            const logDiv = document.createElement('div');
+            logDiv.className = 'log-entry';
+
+            const timestamp = entry.timestamp.toLocaleTimeString();
+
+            logDiv.innerHTML = `
+                <span class="log-timestamp">${timestamp}</span>
+                <span class="log-level ${entry.level}">${entry.level}</span>
+                <span class="log-message">${entry.message}</span>
+            `;
+
+            consoleOutput.appendChild(logDiv);
+
+            // Update event count
+            eventCount++;
+
+            // Limit log entries
+            while (consoleOutput.children.length > 100) {
+                consoleOutput.removeChild(consoleOutput.firstChild);
+            }
+
+            // Auto-scroll
+            if (autoScroll) {
+                consoleOutput.parentElement.scrollTop = consoleOutput.parentElement.scrollHeight;
+            }
+        }
+
+        // Generate network activity
+        function generateNetworkActivity() {
+            const container = document.getElementById('networkTab');
+            container.innerHTML = `
+                <div class="network-item process-header">
+                    <span>Source</span>
+                    <span>Destination</span>
+                    <span>Protocol</span>
+                    <span>Size</span>
+                    <span>Status</span>
+                </div>
+            `;
+
+            for (let i = 0; i < 10; i++) {
+                const item = document.createElement('div');
+                item.className = 'network-item';
+                item.innerHTML = `
+                    <span>192.168.1.${Math.floor(Math.random() * 255)}</span>
+                    <span>${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}</span>
+                    <span>${['TCP', 'UDP', 'HTTP', 'HTTPS'][Math.floor(Math.random() * 4)]}</span>
+                    <span>${Math.floor(Math.random() * 1000)} KB</span>
+                    <span style="color: ${Math.random() > 0.8 ? '#ff3333' : '#00ff00'}">
+                        ${Math.random() > 0.8 ? 'Failed' : 'Success'}
+                    </span>
+                `;
+                container.appendChild(item);
+            }
+        }
+
+        // Update process list
+        function updateProcessList() {
+            const container = document.getElementById('processesTab');
+            container.innerHTML = `
+                <div class="process-item process-header">
+                    <span>PID</span>
+                    <span>Name</span>
+                    <span>CPU %</span>
+                    <span>Memory MB</span>
+                    <span>Status</span>
+                </div>
+            `;
+
+            processes.forEach(proc => {
+                // Randomly update CPU and memory
+                proc.cpu = (Math.random() * 20).toFixed(1);
+                proc.memory = (Math.random() * 300 + 20).toFixed(1);
+
+                const item = document.createElement('div');
+                item.className = 'process-item';
+                item.innerHTML = `
+                    <span>${proc.pid}</span>
+                    <span>${proc.name}</span>
+                    <span style="color: ${proc.cpu > 10 ? '#ffaa00' : '#00ff00'}">${proc.cpu}%</span>
+                    <span>${proc.memory} MB</span>
+                    <span style="color: #00ff00">${proc.status}</span>
+                `;
+                container.appendChild(item);
+            });
+        }
+
+        // Generate security events
+        function generateSecurityEvent() {
+            const events = [
+                { level: 'warning', message: 'Suspicious login attempt detected from 192.168.1.100' },
+                { level: 'error', message: 'Firewall rule violation: Port scan detected' },
+                { level: 'info', message: 'Security policy updated successfully' },
+                { level: 'warning', message: 'Unusual process behavior detected: cryptominer.exe' },
+                { level: 'success', message: 'Threat neutralized: Malware quarantined' }
+            ];
+
+            const event = events[Math.floor(Math.random() * events.length)];
+            event.timestamp = new Date();
+            addLogEntry(event, 'securityTab');
+        }
+
+        // Update stats
+        function updateStats() {
+            // Events per second
+            const now = Date.now();
+            const timeDiff = (now - lastEventTime) / 1000;
+            const eventsPerSec = Math.floor(eventCount / timeDiff);
+            document.getElementById('eventsPerSec').textContent = eventsPerSec;
+
+            // CPU Usage
+            const cpuUsage = Math.floor(Math.random() * 30 + 20);
+            const cpuElement = document.getElementById('cpuUsage');
+            cpuElement.textContent = cpuUsage + '%';
+            cpuElement.className = cpuUsage > 70 ? 'stat-value danger' : cpuUsage > 50 ? 'stat-value warning' : 'stat-value';
+
+            // Memory Usage
+            const memUsage = Math.floor(Math.random() * 40 + 30);
+            const memElement = document.getElementById('memUsage');
+            memElement.textContent = memUsage + '%';
+            memElement.className = memUsage > 80 ? 'stat-value danger' : memUsage > 60 ? 'stat-value warning' : 'stat-value';
+
+            // Network I/O
+            const networkIO = Math.floor(Math.random() * 1000 + 100);
+            document.getElementById('networkIO').textContent = networkIO + ' KB/s';
+
+            // Process Count
+            document.getElementById('processCount').textContent = processes.length;
+
+            // Reset counters periodically
+            if (timeDiff > 5) {
+                eventCount = 0;
+                lastEventTime = now;
+            }
+        }
+
+        // Switch tabs
+        function switchTab(tab) {
+            currentTab = tab;
+
+            // Update tab buttons
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            event.target.classList.add('active');
+
+            // Hide all tabs
+            document.getElementById('logsTab').style.display = 'none';
+            document.getElementById('processesTab').style.display = 'none';
+            document.getElementById('networkTab').style.display = 'none';
+            document.getElementById('securityTab').style.display = 'none';
+
+            // Show selected tab
+            switch(tab) {
+                case 'logs':
+                    document.getElementById('logsTab').style.display = 'block';
+                    break;
+                case 'processes':
+                    document.getElementById('processesTab').style.display = 'block';
+                    updateProcessList();
+                    break;
+                case 'network':
+                    document.getElementById('networkTab').style.display = 'block';
+                    generateNetworkActivity();
+                    break;
+                case 'security':
+                    document.getElementById('securityTab').style.display = 'block';
+                    break;
+            }
+        }
+
+        // Control functions
+        function clearLogs() {
+            if (currentTab === 'logs') {
+                document.getElementById('logsTab').innerHTML = '';
+            } else if (currentTab === 'security') {
+                document.getElementById('securityTab').innerHTML = '';
+            }
+        }
+
+        function exportLogs() {
+            let content = '';
+            const container = currentTab === 'security' ? 'securityTab' : 'logsTab';
+            const logs = document.getElementById(container).children;
+
+            for (let log of logs) {
+                content += log.textContent.trim() + '\n';
+            }
+
+            const blob = new Blob([content], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `console_logs_${Date.now()}.txt`;
+            a.click();
+        }
+
+        function togglePause() {
+            paused = !paused;
+            const btn = document.getElementById('pauseBtn');
+            btn.textContent = paused ? 'Resume' : 'Pause';
+            btn.className = paused ? 'btn' : 'btn danger';
+        }
+
+        // Event listeners
+        document.getElementById('autoScroll').addEventListener('change', (e) => {
+            autoScroll = e.target.checked;
+        });
+
+        document.getElementById('logLevel').addEventListener('change', () => {
+            document.getElementById('logsTab').innerHTML = '';
+        });
+
+        document.getElementById('searchFilter').addEventListener('input', () => {
+            document.getElementById('logsTab').innerHTML = '';
+        });
+
+        // Nebula animation
+        const nebulaCanvas = document.getElementById('nebulaCanvas');
+        const nebulaCtx = nebulaCanvas.getContext('2d');
+        const starsCanvas = document.getElementById('starsCanvas');
+        const starsCtx = starsCanvas.getContext('2d');
+
+        function resizeCanvas() {
+            nebulaCanvas.width = window.innerWidth;
+            nebulaCanvas.height = window.innerHeight;
+            starsCanvas.width = window.innerWidth;
+            starsCanvas.height = window.innerHeight;
+        }
+
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        // Create nebula effect
+        function createNebula() {
+            const gradient = nebulaCtx.createRadialGradient(
+                nebulaCanvas.width * 0.3, nebulaCanvas.height * 0.3, 0,
+                nebulaCanvas.width * 0.3, nebulaCanvas.height * 0.3, nebulaCanvas.width * 0.6
+            );
+            gradient.addColorStop(0, 'rgba(0, 255, 0, 0.3)');
+            gradient.addColorStop(0.5, 'rgba(191, 0, 255, 0.2)');
+            gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
+
+            nebulaCtx.fillStyle = gradient;
+            nebulaCtx.fillRect(0, 0, nebulaCanvas.width, nebulaCanvas.height);
+
+            const gradient2 = nebulaCtx.createRadialGradient(
+                nebulaCanvas.width * 0.7, nebulaCanvas.height * 0.6, 0,
+                nebulaCanvas.width * 0.7, nebulaCanvas.height * 0.6, nebulaCanvas.width * 0.4
+            );
+            gradient2.addColorStop(0, 'rgba(191, 0, 255, 0.3)');
+            gradient2.addColorStop(0.5, 'rgba(0, 255, 0, 0.1)');
+            gradient2.addColorStop(1, 'rgba(0, 0, 0, 0)');
+
+            nebulaCtx.fillStyle = gradient2;
+            nebulaCtx.fillRect(0, 0, nebulaCanvas.width, nebulaCanvas.height);
+        }
+
+        // Create stars
+        const stars = [];
+        for (let i = 0; i < 2500; i++) {
+            stars.push({
+                x: Math.random() * starsCanvas.width,
+                y: Math.random() * starsCanvas.height,
+                radius: Math.random() * 1.5,
+                opacity: Math.random(),
+                speed: Math.random() * 0.5 + 0.1,
+                color: Math.random() > 0.5 ? 'rgba(0, 255, 0,' : 'rgba(191, 0, 255,'
+            });
+        }
+
+        function animateStars() {
+            starsCtx.clearRect(0, 0, starsCanvas.width, starsCanvas.height);
+
+            stars.forEach(star => {
+                star.opacity += (Math.random() - 0.5) * 0.1;
+                star.opacity = Math.max(0.1, Math.min(1, star.opacity));
+
+                starsCtx.beginPath();
+                starsCtx.arc(star.x, star.y, star.radius, 0, Math.PI * 2);
+                starsCtx.fillStyle = star.color + star.opacity + ')';
+                starsCtx.fill();
+
+                star.y += star.speed;
+                if (star.y > starsCanvas.height) {
+                    star.y = 0;
+                    star.x = Math.random() * starsCanvas.width;
+                }
+            });
+
+            requestAnimationFrame(animateStars);
+        }
+
+        // Start animation and log generation
+        createNebula();
+        animateStars();
+
+        // Generate logs continuously
+        setInterval(() => {
+            if (!paused && currentTab === 'logs') {
+                addLogEntry(generateLogEntry());
+            }
+        }, Math.random() * 1000 + 500);
+
+        // Generate security events
+        setInterval(() => {
+            if (!paused && currentTab === 'security') {
+                generateSecurityEvent();
+            }
+        }, Math.random() * 2000 + 1000);
+
+        // Update stats
+        setInterval(updateStats, 1000);
+
+        // Update process list if visible
+        setInterval(() => {
+            if (currentTab === 'processes' && !paused) {
+                updateProcessList();
+            }
+        }, 2000);
+
+        // Update network activity if visible
+        setInterval(() => {
+            if (currentTab === 'network' && !paused) {
+                generateNetworkActivity();
+            }
+        }, 3000);
+    </script>
+</body>
+</html>

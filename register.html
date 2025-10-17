@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - TheGAVL Red Team Tools</title>
+    <meta name="robots" content="noindex, nofollow">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a0000 100%);
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .register-container {
+            max-width: 600px;
+            width: 100%;
+            background: linear-gradient(135deg, #1a0000, #0a0a0a);
+            border: 2px solid #ff3333;
+            border-radius: 15px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(255, 51, 51, 0.4);
+        }
+
+        h1 {
+            text-align: center;
+            color: #ff6666;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #ffcccc;
+            margin-bottom: 30px;
+            opacity: 0.9;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            color: #ff9999;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 15px;
+            background: #0a0a0a;
+            border: 1px solid #ff3333;
+            border-radius: 5px;
+            color: #fff;
+            font-family: 'Courier New', monospace;
+            font-size: 1em;
+            transition: all 0.3s;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #ff6666;
+            box-shadow: 0 0 15px rgba(255, 51, 51, 0.3);
+        }
+
+        .checkbox-group {
+            margin: 25px 0;
+            padding: 20px;
+            background: rgba(255, 51, 51, 0.1);
+            border: 1px solid #ff3333;
+            border-radius: 5px;
+        }
+
+        .checkbox-group label {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+            cursor: pointer;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            width: auto;
+            margin-right: 10px;
+            cursor: pointer;
+        }
+
+        .checkbox-group a {
+            color: #ff9999;
+            text-decoration: underline;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, #ff3333, #ff6666);
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.2em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-family: 'Courier New', monospace;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(255, 51, 51, 0.5);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .alert {
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .alert.success {
+            background: rgba(0, 255, 0, 0.1);
+            border: 1px solid #00ff00;
+            color: #00ff00;
+        }
+
+        .alert.error {
+            background: rgba(255, 0, 0, 0.1);
+            border: 1px solid #ff0000;
+            color: #ff6666;
+        }
+
+        .login-link {
+            text-align: center;
+            margin-top: 25px;
+            color: #ffcccc;
+        }
+
+        .login-link a {
+            color: #ff9999;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .login-link a:hover {
+            color: #ff6666;
+        }
+
+        .warning-box {
+            background: rgba(255, 0, 0, 0.2);
+            border: 2px solid #ff0000;
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 25px;
+            text-align: center;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="register-container">
+        <h1>🛡️ Register</h1>
+        <p class="subtitle">Create your TheGAVL Red Team Tools account</p>
+
+        <div class="warning-box">
+            ⚠️ Authorized Use Only - Illegal use will be reported to law enforcement
+        </div>
+
+        <div id="alert" class="alert"></div>
+
+        <form id="registerForm">
+            <div class="form-group">
+                <label for="name">Full Name *</label>
+                <input type="text" id="name" required placeholder="John Doe">
+            </div>
+
+            <div class="form-group">
+                <label for="email">Email Address *</label>
+                <input type="email" id="email" required placeholder="john@company.com">
+            </div>
+
+            <div class="form-group">
+                <label for="company">Company/Organization</label>
+                <input type="text" id="company" placeholder="Security Corp LLC (optional)">
+            </div>
+
+            <div class="form-group">
+                <label for="password">Password *</label>
+                <input type="password" id="password" required placeholder="Minimum 8 characters" minlength="8">
+            </div>
+
+            <div class="form-group">
+                <label for="confirmPassword">Confirm Password *</label>
+                <input type="password" id="confirmPassword" required placeholder="Re-enter password" minlength="8">
+            </div>
+
+            <div class="form-group">
+                <label for="profession">Professional Role *</label>
+                <select id="profession" required>
+                    <option value="">Select your role...</option>
+                    <option value="penetration_tester">Penetration Tester</option>
+                    <option value="security_researcher">Security Researcher</option>
+                    <option value="ethical_hacker">Ethical Hacker</option>
+                    <option value="security_analyst">Security Analyst</option>
+                    <option value="security_consultant">Security Consultant</option>
+                    <option value="red_team">Red Team Operator</option>
+                    <option value="student">Student (Cybersecurity)</option>
+                    <option value="researcher">Academic Researcher</option>
+                    <option value="other">Other Security Professional</option>
+                </select>
+            </div>
+
+            <div class="checkbox-group">
+                <label>
+                    <input type="checkbox" id="age18" required>
+                    I am at least 18 years old
+                </label>
+
+                <label>
+                    <input type="checkbox" id="termsAccept" required>
+                    I have read and agree to the <a href="terms-of-service.html" target="_blank">Terms of Service</a>
+                </label>
+
+                <label>
+                    <input type="checkbox" id="aupAccept" required>
+                    I have read and agree to the <a href="acceptable-use-policy.html" target="_blank">Acceptable Use Policy</a>
+                </label>
+
+                <label>
+                    <input type="checkbox" id="authorizedUse" required>
+                    I understand these tools are for <strong>authorized use only</strong> and I will obtain written permission before conducting security assessments
+                </label>
+
+                <label>
+                    <input type="checkbox" id="legalAcknowledge" required>
+                    I understand that unauthorized use of these tools may violate federal law (18 U.S.C. § 1030) and result in criminal prosecution
+                </label>
+            </div>
+
+            <button type="submit" class="btn" id="submitBtn">🚀 Create Account</button>
+        </form>
+
+        <div class="login-link">
+            Already have an account? <a href="login.html">Login here</a>
+        </div>
+    </div>
+
+    <script>
+        // TODO: Replace with your Supabase credentials
+        const SUPABASE_URL = 'https://your-project.supabase.co';
+        const SUPABASE_ANON_KEY = 'your-anon-key-here';
+
+        // Initialize Supabase
+        const { createClient } = supabase;
+        const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        const form = document.getElementById('registerForm');
+        const alert = document.getElementById('alert');
+        const submitBtn = document.getElementById('submitBtn');
+
+        function showAlert(message, type) {
+            alert.textContent = message;
+            alert.className = `alert ${type}`;
+            alert.style.display = 'block';
+            setTimeout(() => {
+                alert.style.display = 'none';
+            }, 5000);
+        }
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            // Get form values
+            const name = document.getElementById('name').value;
+            const email = document.getElementById('email').value;
+            const company = document.getElementById('company').value;
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            const profession = document.getElementById('profession').value;
+
+            // Validate passwords match
+            if (password !== confirmPassword) {
+                showAlert('Passwords do not match', 'error');
+                return;
+            }
+
+            // Validate all checkboxes
+            const age18 = document.getElementById('age18').checked;
+            const termsAccept = document.getElementById('termsAccept').checked;
+            const aupAccept = document.getElementById('aupAccept').checked;
+            const authorizedUse = document.getElementById('authorizedUse').checked;
+            const legalAcknowledge = document.getElementById('legalAcknowledge').checked;
+
+            if (!age18 || !termsAccept || !aupAccept || !authorizedUse || !legalAcknowledge) {
+                showAlert('Please accept all terms and conditions', 'error');
+                return;
+            }
+
+            // Disable submit button
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Creating Account...';
+
+            try {
+                // Sign up with Supabase
+                const { data, error } = await supabaseClient.auth.signUp({
+                    email: email,
+                    password: password,
+                    options: {
+                        data: {
+                            name: name,
+                            company: company,
+                            profession: profession,
+                            age_verified: age18,
+                            terms_accepted: termsAccept,
+                            aup_accepted: aupAccept,
+                            authorized_use_acknowledged: authorizedUse,
+                            legal_acknowledged: legalAcknowledge,
+                            registration_date: new Date().toISOString(),
+                            ip_address: await fetch('https://api.ipify.org?format=json')
+                                .then(r => r.json())
+                                .then(d => d.ip)
+                                .catch(() => 'unknown')
+                        }
+                    }
+                });
+
+                if (error) {
+                    throw error;
+                }
+
+                // Success
+                showAlert('Account created successfully! Please check your email to verify your account.', 'success');
+
+                // Log registration to analytics (optional)
+                await supabaseClient.from('user_registrations').insert([{
+                    email: email,
+                    name: name,
+                    company: company,
+                    profession: profession,
+                    registered_at: new Date().toISOString()
+                }]).catch(err => console.log('Analytics logging failed:', err));
+
+                // Redirect to login after 3 seconds
+                setTimeout(() => {
+                    window.location.href = 'login.html';
+                }, 3000);
+
+            } catch (error) {
+                console.error('Registration error:', error);
+                showAlert(error.message || 'Registration failed. Please try again.', 'error');
+                submitBtn.disabled = false;
+                submitBtn.textContent = '🚀 Create Account';
+            }
+        });
+    </script>
+</body>
+</html>
+
+<!-- Copyright (c) 2025 Joshua Hendricks Cole (DBA: Corporation of Light). All Rights Reserved. PATENT PENDING. -->

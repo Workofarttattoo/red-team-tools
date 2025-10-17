@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TheGAVL Red Team Security Tools - Authorized Use Only</title>
+    <meta name="description" content="Professional security assessment and penetration testing tools for authorized use only.">
+    <meta name="robots" content="noindex, nofollow">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: #000;
+            color: #fff;
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Blue Nebula Background */
+        .nebula-container {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            z-index: -1;
+        }
+
+        .space-background {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background:
+                radial-gradient(ellipse at 30% 40%, rgba(0, 120, 215, 0.3) 0%, transparent 40%),
+                radial-gradient(ellipse at 70% 30%, rgba(0, 255, 255, 0.2) 0%, transparent 45%),
+                radial-gradient(ellipse at 50% 60%, rgba(0, 100, 200, 0.25) 0%, transparent 40%),
+                radial-gradient(ellipse at 20% 70%, rgba(100, 200, 255, 0.2) 0%, transparent 35%),
+                radial-gradient(ellipse at 80% 80%, rgba(0, 191, 255, 0.15) 0%, transparent 40%),
+                #000;
+        }
+
+        canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Demo Banner */
+        .demo-banner {
+            background: linear-gradient(135deg, #00ff88, #00d4ff, #a855f7);
+            color: #000;
+            text-align: center;
+            padding: 20px;
+            font-weight: 900;
+            font-size: 1.5em;
+            position: sticky;
+            top: 0;
+            z-index: 1001;
+            box-shadow: 0 4px 30px rgba(0, 255, 136, 0.7);
+            animation: demo-pulse 3s ease-in-out infinite;
+            text-transform: uppercase;
+            letter-spacing: 0.2em;
+            border-bottom: 3px solid #00ff88;
+        }
+
+        @keyframes demo-pulse {
+            0%, 100% {
+                background: linear-gradient(135deg, #00ff88, #00d4ff, #a855f7);
+                box-shadow: 0 4px 30px rgba(0, 255, 136, 0.7);
+            }
+            50% {
+                background: linear-gradient(135deg, #a855f7, #00d4ff, #00ff88);
+                box-shadow: 0 4px 40px rgba(168, 85, 247, 0.9);
+            }
+        }
+
+        /* Warning Banner */
+        .warning-banner {
+            background: #ff0000;
+            color: #fff;
+            text-align: center;
+            padding: 15px;
+            font-weight: bold;
+            font-size: 1.1em;
+            position: sticky;
+            top: 80px;
+            z-index: 1000;
+            box-shadow: 0 4px 20px rgba(255, 0, 0, 0.5);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.8; }
+        }
+
+        /* Matrix Rain Background Canvas */
+        #matrixCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        /* Header */
+        header {
+            text-align: center;
+            margin-bottom: 60px;
+            padding: 40px 0;
+        }
+
+        .logo {
+            font-size: 4em;
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            font-size: 3em;
+            color: #ff3333;
+            text-shadow: 0 0 20px rgba(255, 51, 51, 0.8);
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            font-size: 1.3em;
+            color: #ffcccc;
+            opacity: 0.9;
+        }
+
+        /* Legal Notice */
+        .legal-notice {
+            background: rgba(10, 10, 20, 0.8);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(0, 191, 255, 0.5);
+            border-radius: 10px;
+            padding: 30px;
+            margin-bottom: 40px;
+            box-shadow: 0 10px 40px rgba(0, 191, 255, 0.3);
+        }
+
+        .legal-notice h2 {
+            color: #ff6666;
+            margin-bottom: 20px;
+            font-size: 1.8em;
+        }
+
+        .legal-notice p {
+            line-height: 1.8;
+            margin-bottom: 15px;
+            color: #ffcccc;
+        }
+
+        .legal-notice ul {
+            margin: 20px 0 20px 30px;
+            line-height: 2;
+        }
+
+        .legal-notice ul li {
+            color: #ff9999;
+        }
+
+        /* Tools Grid */
+        .tools-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin: 40px 0;
+        }
+
+        .tool-card {
+            background: rgba(10, 10, 30, 0.6);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(0, 191, 255, 0.4);
+            border-radius: 10px;
+            padding: 30px;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .tool-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0, 191, 255, 0.5);
+            border-color: rgba(0, 255, 255, 0.7);
+            background: rgba(10, 10, 40, 0.8);
+        }
+
+        .tool-card h3 {
+            color: #ff6666;
+            font-size: 1.5em;
+            margin-bottom: 15px;
+        }
+
+        .tool-card p {
+            color: #ffcccc;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+
+        .tool-card .status {
+            display: inline-block;
+            padding: 5px 15px;
+            background: #00ff00;
+            color: #000;
+            border-radius: 5px;
+            font-size: 0.9em;
+            font-weight: bold;
+        }
+
+        /* CTA Section */
+        .cta-section {
+            text-align: center;
+            margin: 60px 0;
+            padding: 60px 40px;
+            background: rgba(10, 10, 30, 0.7);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(0, 191, 255, 0.5);
+            border-radius: 15px;
+        }
+
+        .cta-section h2 {
+            color: #ff6666;
+            font-size: 2.5em;
+            margin-bottom: 20px;
+        }
+
+        .cta-section p {
+            font-size: 1.2em;
+            color: #ffcccc;
+            margin-bottom: 30px;
+            line-height: 1.8;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 20px 50px;
+            background: linear-gradient(135deg, #ff3333, #ff6666);
+            color: #fff;
+            text-decoration: none;
+            border-radius: 10px;
+            font-size: 1.3em;
+            font-weight: bold;
+            transition: all 0.3s;
+            box-shadow: 0 10px 30px rgba(255, 51, 51, 0.4);
+            margin: 10px;
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(255, 51, 51, 0.6);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #333, #555);
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 40px 20px;
+            border-top: 1px solid #ff3333;
+            margin-top: 60px;
+            color: #ffcccc;
+        }
+
+        footer a {
+            color: #ff6666;
+            text-decoration: none;
+            margin: 0 15px;
+            transition: color 0.3s;
+        }
+
+        footer a:hover {
+            color: #ff9999;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            h1 { font-size: 2em; }
+            .subtitle { font-size: 1em; }
+            .tools-grid { grid-template-columns: 1fr; }
+            .btn { padding: 15px 30px; font-size: 1.1em; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Matrix Rain Background -->
+    <canvas id="matrixCanvas"></canvas>
+
+    <!-- Blue Nebula Background -->
+    <div class="nebula-container">
+        <div class="space-background"></div>
+        <canvas id="stars"></canvas>
+        <canvas id="nebula"></canvas>
+        <canvas id="dust"></canvas>
+    </div>
+
+    <!-- Demo Banner -->
+    <div class="demo-banner">
+        🎮 DEMONSTRATION MODE - Interactive Security Tools Showcase
+    </div>
+
+    <!-- Warning Banner -->
+    <div class="warning-banner">
+        ⚠️ AUTHORIZED USE ONLY - Unauthorized access or misuse of these tools is illegal and punishable by law (CFAA 18 U.S.C. § 1030)
+    </div>
+
+    <!-- Live Terminal Container -->
+    <div id="liveTerminalContainer"></div>
+
+    <!-- Network Packets Container -->
+    <div id="networkPacketsContainer"></div>
+
+    <div class="container">
+        <!-- Header -->
+        <header>
+            <div class="logo">🛡️</div>
+            <h1>TheGAVL Red Team Security Tools</h1>
+            <p class="subtitle">Professional Security Assessment & Penetration Testing Suite</p>
+        </header>
+
+        <!-- Legal Notice -->
+        <div class="legal-notice">
+            <h2>⚖️ Legal Notice & Terms of Use</h2>
+            <p><strong>READ CAREFULLY BEFORE PROCEEDING</strong></p>
+            <p>
+                These security assessment tools are provided EXCLUSIVELY for <strong>authorized penetration testing</strong>,
+                <strong>vulnerability research</strong>, and <strong>legitimate security assessments</strong>.
+            </p>
+            <p><strong>YOU MUST HAVE EXPLICIT WRITTEN PERMISSION</strong> from the system owner before conducting any security testing.</p>
+
+            <h3 style="color: #ff6666; margin: 20px 0 10px;">✅ Acceptable Uses:</h3>
+            <ul>
+                <li>Authorized penetration testing with written permission</li>
+                <li>Vulnerability assessments on systems you own</li>
+                <li>Security research in controlled lab environments</li>
+                <li>Bug bounty programs (following program rules)</li>
+                <li>Educational purposes on designated training platforms</li>
+            </ul>
+
+            <h3 style="color: #ff0000; margin: 20px 0 10px;">❌ Prohibited Activities:</h3>
+            <ul style="color: #ff0000;">
+                <li>Unauthorized access to computer systems (CFAA violation)</li>
+                <li>Testing systems without explicit owner permission</li>
+                <li>Malicious hacking, data theft, or system damage</li>
+                <li>Any illegal activity under federal or state law</li>
+            </ul>
+
+            <p style="margin-top: 20px; font-size: 1.1em;">
+                <strong>⚠️ WARNING:</strong> Violations may result in immediate account termination,
+                reporting to law enforcement, and criminal prosecution under 18 U.S.C. § 1030 (CFAA).
+            </p>
+
+            <p style="margin-top: 20px;">
+                By proceeding, you agree to our
+                <a href="terms-of-service.html" style="color: #ff9999; text-decoration: underline;">Terms of Service</a> and
+                <a href="acceptable-use-policy.html" style="color: #ff9999; text-decoration: underline;">Acceptable Use Policy</a>.
+            </p>
+        </div>
+
+        <!-- Tools Overview -->
+        <section>
+            <h2 style="text-align: center; color: #ff6666; font-size: 2.5em; margin-bottom: 40px;">
+                Available Security Tools
+            </h2>
+
+            <div class="tools-grid">
+                <div class="tool-card">
+                    <h3>🔍 AuroraScan</h3>
+                    <p>Network reconnaissance and port scanning utility for discovering open services and potential attack vectors.</p>
+                    <span class="status">AVAILABLE</span>
+                </div>
+
+                <div class="tool-card">
+                    <h3>💉 CipherSpear</h3>
+                    <p>Database injection analysis tool for testing SQL injection vulnerabilities in web applications.</p>
+                    <span class="status">AVAILABLE</span>
+                </div>
+
+                <div class="tool-card">
+                    <h3>📁 DirReaper</h3>
+                    <p>Directory enumeration and file discovery tool for uncovering hidden web resources and endpoints.</p>
+                    <span class="status">AVAILABLE</span>
+                </div>
+
+                <div class="tool-card">
+                    <h3>🔑 MythicKey</h3>
+                    <p>Credential analysis and password auditing tool for testing authentication security.</p>
+                    <span class="status">AVAILABLE</span>
+                </div>
+
+                <div class="tool-card">
+                    <h3>🐍 NemesisHydra</h3>
+                    <p>Multi-protocol authentication testing tool for brute-force resistance evaluation.</p>
+                    <span class="status">AVAILABLE</span>
+                </div>
+
+                <div class="tool-card">
+                    <h3>🗺️ NmapPro</h3>
+                    <p>Advanced port scanning and network mapping utility with custom fingerprinting capabilities.</p>
+                    <span class="status">AVAILABLE</span>
+                </div>
+
+                <div class="tool-card">
+                    <h3>🛡️ ObsidianHunt</h3>
+                    <p>Host hardening audit tool for evaluating system security configurations and compliance.</p>
+                    <span class="status">AVAILABLE</span>
+                </div>
+
+                <div class="tool-card">
+                    <h3>👻 ProxyPhantom</h3>
+                    <p>Proxy management and anonymity tool for secure testing environments.</p>
+                    <span class="status">AVAILABLE</span>
+                </div>
+
+                <div class="tool-card">
+                    <h3>⚔️ PayloadForge</h3>
+                    <p>Payload generation and encoding utility for penetration testing scenarios.</p>
+                    <span class="status">AVAILABLE</span>
+                </div>
+
+                <div class="tool-card">
+                    <h3>🔬 OSINT Workflows</h3>
+                    <p>Open-source intelligence gathering toolkit for reconnaissance and information analysis.</p>
+                    <span class="status">AVAILABLE</span>
+                </div>
+
+                <div class="tool-card">
+                    <h3>🎯 VulnHunter</h3>
+                    <p>Comprehensive vulnerability scanner with 50+ security checks and CVE database integration.</p>
+                    <span class="status">AVAILABLE</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- CTA Section -->
+        <section class="cta-section">
+            <h2>Ready to Get Started?</h2>
+            <p>Create your account to access professional-grade security assessment tools.</p>
+            <p style="font-size: 1em; margin-bottom: 40px;">
+                <strong>Registration includes:</strong> Professional credential verification, access to all tools,
+                comprehensive documentation, and 24/7 support.
+            </p>
+            <a href="register.html" class="btn">🚀 Create Account</a>
+            <a href="login.html" class="btn btn-secondary">🔐 Login</a>
+        </section>
+
+        <!-- Features -->
+        <section style="margin: 60px 0; text-align: center;">
+            <h2 style="color: #ff6666; font-size: 2.5em; margin-bottom: 40px;">Why Choose TheGAVL Tools?</h2>
+            <div class="tools-grid">
+                <div class="tool-card">
+                    <h3>✅ Legally Compliant</h3>
+                    <p>Fully compliant with CFAA and export regulations. Clear Terms of Service and AUP protect both you and us.</p>
+                </div>
+                <div class="tool-card">
+                    <h3>🛡️ Professional Grade</h3>
+                    <p>Tools used by security researchers, penetration testers, and red team professionals worldwide.</p>
+                </div>
+                <div class="tool-card">
+                    <h3>📚 Comprehensive Docs</h3>
+                    <p>Detailed documentation, usage examples, and best practices for each tool.</p>
+                </div>
+                <div class="tool-card">
+                    <h3>🔄 Regular Updates</h3>
+                    <p>Continuous updates with new vulnerability checks, CVE integration, and feature enhancements.</p>
+                </div>
+                <div class="tool-card">
+                    <h3>🎓 Educational</h3>
+                    <p>Learn security assessment techniques through real-world tools and scenarios.</p>
+                </div>
+                <div class="tool-card">
+                    <h3>💬 24/7 Support</h3>
+                    <p>Technical support, legal guidance, and community forums available around the clock.</p>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <p><strong>Corporation of Light DBA TheGAVL</strong></p>
+        <p style="margin: 20px 0;">
+            <a href="terms-of-service.html">Terms of Service</a> |
+            <a href="acceptable-use-policy.html">Acceptable Use Policy</a> |
+            <a href="privacy-policy.html">Privacy Policy</a> |
+            <a href="responsible-disclosure.html">Responsible Disclosure</a> |
+            <a href="mailto:legal@thegavl.com">Legal</a> |
+            <a href="mailto:support@thegavl.com">Support</a>
+        </p>
+        <p style="margin-top: 20px; opacity: 0.7; font-size: 0.9em;">
+            Copyright © 2025 Joshua Hendricks Cole (DBA: Corporation of Light). All Rights Reserved. PATENT PENDING.
+        </p>
+        <p style="margin-top: 10px; opacity: 0.7; font-size: 0.9em;">
+            ⚠️ These tools are for authorized security testing only. Unauthorized use is illegal.
+        </p>
+        <p style="margin-top: 20px; font-size: 0.8em; opacity: 0.5;">
+            Law Enforcement Inquiries: <a href="mailto:lawenforcement@thegavl.com">lawenforcement@thegavl.com</a> (24/7)
+        </p>
+    </footer>
+
+    <script>
+        // Canvas setup for blue nebula
+        const starsCanvas = document.getElementById('stars');
+        const starsCtx = starsCanvas.getContext('2d');
+        const nebulaCanvas = document.getElementById('nebula');
+        const nebulaCtx = nebulaCanvas.getContext('2d');
+        const dustCanvas = document.getElementById('dust');
+        const dustCtx = dustCanvas.getContext('2d');
+
+        function resizeCanvases() {
+            [starsCanvas, nebulaCanvas, dustCanvas].forEach(canvas => {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+            });
+            drawSpace();
+        }
+        resizeCanvases();
+        window.addEventListener('resize', resizeCanvases);
+
+        // Create star field
+        function drawStarField() {
+            starsCtx.fillStyle = '#000';
+            starsCtx.fillRect(0, 0, starsCanvas.width, starsCanvas.height);
+
+            // Tiny background stars
+            for (let i = 0; i < 2500; i++) {
+                const x = Math.random() * starsCanvas.width;
+                const y = Math.random() * starsCanvas.height;
+                const size = Math.random() * 0.8;
+                const brightness = Math.random();
+
+                starsCtx.fillStyle = `rgba(255, 255, 255, ${brightness})`;
+                starsCtx.fillRect(x, y, size, size);
+            }
+
+            // Small blue-tinted stars
+            for (let i = 0; i < 600; i++) {
+                const x = Math.random() * starsCanvas.width;
+                const y = Math.random() * starsCanvas.height;
+                const size = Math.random() * 1.5 + 0.5;
+
+                const colors = [
+                    'rgba(255, 255, 255, 0.9)',
+                    'rgba(200, 230, 255, 0.9)',
+                    'rgba(150, 200, 255, 0.9)',
+                    'rgba(100, 180, 255, 0.9)'
+                ];
+                const color = colors[Math.floor(Math.random() * colors.length)];
+
+                starsCtx.fillStyle = color;
+                starsCtx.beginPath();
+                starsCtx.arc(x, y, size/2, 0, Math.PI * 2);
+                starsCtx.fill();
+            }
+
+            // Bright stars with cyan glow
+            for (let i = 0; i < 60; i++) {
+                const x = Math.random() * starsCanvas.width;
+                const y = Math.random() * starsCanvas.height;
+                const size = Math.random() * 3 + 1;
+
+                // Cyan glow
+                const gradient = starsCtx.createRadialGradient(x, y, 0, x, y, size * 4);
+                gradient.addColorStop(0, 'rgba(255, 255, 255, 0.8)');
+                gradient.addColorStop(0.2, 'rgba(0, 255, 255, 0.3)');
+                gradient.addColorStop(1, 'transparent');
+
+                starsCtx.fillStyle = gradient;
+                starsCtx.fillRect(x - size * 4, y - size * 4, size * 8, size * 8);
+
+                // Core
+                starsCtx.fillStyle = 'white';
+                starsCtx.beginPath();
+                starsCtx.arc(x, y, size/2, 0, Math.PI * 2);
+                starsCtx.fill();
+            }
+        }
+
+        // Create blue nebula clouds
+        function drawNebula() {
+            nebulaCtx.clearRect(0, 0, nebulaCanvas.width, nebulaCanvas.height);
+
+            // Main blue nebula cloud
+            const mainGradient = nebulaCtx.createRadialGradient(
+                nebulaCanvas.width * 0.5, nebulaCanvas.height * 0.4, 0,
+                nebulaCanvas.width * 0.5, nebulaCanvas.height * 0.4, 600
+            );
+            mainGradient.addColorStop(0, 'rgba(0, 120, 215, 0.4)');
+            mainGradient.addColorStop(0.3, 'rgba(0, 180, 255, 0.3)');
+            mainGradient.addColorStop(0.6, 'rgba(0, 100, 200, 0.2)');
+            mainGradient.addColorStop(1, 'transparent');
+
+            nebulaCtx.fillStyle = mainGradient;
+            nebulaCtx.fillRect(0, 0, nebulaCanvas.width, nebulaCanvas.height);
+
+            // Cyan cloud
+            const cyanGradient = nebulaCtx.createRadialGradient(
+                nebulaCanvas.width * 0.3, nebulaCanvas.height * 0.6, 0,
+                nebulaCanvas.width * 0.3, nebulaCanvas.height * 0.6, 400
+            );
+            cyanGradient.addColorStop(0, 'rgba(0, 255, 255, 0.3)');
+            cyanGradient.addColorStop(0.4, 'rgba(0, 200, 255, 0.2)');
+            cyanGradient.addColorStop(1, 'transparent');
+
+            nebulaCtx.fillStyle = cyanGradient;
+            nebulaCtx.fillRect(0, 0, nebulaCanvas.width, nebulaCanvas.height);
+
+            // Teal wisps
+            const tealGradient = nebulaCtx.createRadialGradient(
+                nebulaCanvas.width * 0.7, nebulaCanvas.height * 0.3, 0,
+                nebulaCanvas.width * 0.7, nebulaCanvas.height * 0.3, 350
+            );
+            tealGradient.addColorStop(0, 'rgba(0, 150, 200, 0.3)');
+            tealGradient.addColorStop(0.5, 'rgba(0, 100, 150, 0.15)');
+            tealGradient.addColorStop(1, 'transparent');
+
+            nebulaCtx.fillStyle = tealGradient;
+            nebulaCtx.fillRect(0, 0, nebulaCanvas.width, nebulaCanvas.height);
+        }
+
+        // Create dark dust lanes
+        function drawDustLanes() {
+            dustCtx.clearRect(0, 0, dustCanvas.width, dustCanvas.height);
+
+            // Dark dust lane
+            dustCtx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+            dustCtx.beginPath();
+            dustCtx.moveTo(dustCanvas.width * 0.8, 0);
+            dustCtx.quadraticCurveTo(
+                dustCanvas.width * 0.6, dustCanvas.height * 0.3,
+                dustCanvas.width * 0.4, dustCanvas.height * 0.5
+            );
+            dustCtx.quadraticCurveTo(
+                dustCanvas.width * 0.2, dustCanvas.height * 0.7,
+                0, dustCanvas.height
+            );
+            dustCtx.lineTo(0, 0);
+            dustCtx.closePath();
+            dustCtx.fill();
+
+            // Apply blur
+            dustCtx.filter = 'blur(40px)';
+            dustCtx.globalAlpha = 0.6;
+            dustCtx.drawImage(dustCanvas, 0, 0);
+            dustCtx.filter = 'none';
+            dustCtx.globalAlpha = 1;
+        }
+
+        // Draw everything
+        function drawSpace() {
+            drawStarField();
+            drawNebula();
+            drawDustLanes();
+        }
+
+        drawSpace();
+
+        // Animate subtle nebula movement
+        let time = 0;
+        function animateNebula() {
+            time += 0.001;
+
+            nebulaCtx.globalCompositeOperation = 'screen';
+            const shiftGradient = nebulaCtx.createRadialGradient(
+                nebulaCanvas.width * (0.5 + Math.sin(time) * 0.05),
+                nebulaCanvas.height * (0.5 + Math.cos(time) * 0.05),
+                0,
+                nebulaCanvas.width * 0.5, nebulaCanvas.height * 0.5, 400
+            );
+            shiftGradient.addColorStop(0, 'rgba(0, 191, 255, 0.01)');
+            shiftGradient.addColorStop(1, 'transparent');
+
+            nebulaCtx.fillStyle = shiftGradient;
+            nebulaCtx.fillRect(0, 0, nebulaCanvas.width, nebulaCanvas.height);
+            nebulaCtx.globalCompositeOperation = 'source-over';
+
+            requestAnimationFrame(animateNebula);
+        }
+        animateNebula();
+    </script>
+
+    <!-- Visual Effects Library -->
+    <script src="js/visual-effects.js"></script>
+
+    <!-- Initialize Visual Effects -->
+    <script>
+        // Initialize Matrix Rain background
+        const matrixRain = new window.VisualEffects.MatrixRain('matrixCanvas', {
+            fontSize: 14,
+            color: '#00ff88',
+            opacity: 0.08,
+            speed: 40
+        });
+
+        // Initialize Network Packets
+        const networkPackets = new window.VisualEffects.NetworkPackets('networkPacketsContainer');
+
+        // Initialize Live Terminal
+        const liveTerminal = new window.VisualEffects.LiveTerminal('liveTerminalContainer');
+
+        // Start demo commands for available tools
+        liveTerminal.startDemoCommands('default');
+
+        console.log('%c🛡️ Red Team Tools - DEMO MODE', 'font-size: 20px; font-weight: bold; color: #00ff88; text-shadow: 0 0 10px #00ff88;');
+        console.log('%cVisual effects active: Matrix Rain, Network Packets, Live Terminal', 'color: #00d4ff;');
+    </script>
+</body>
+</html>
+
+<!-- Copyright (c) 2025 Joshua Hendricks Cole (DBA: Corporation of Light). All Rights Reserved. PATENT PENDING. -->

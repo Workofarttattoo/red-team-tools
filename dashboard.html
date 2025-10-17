@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - TheGAVL Red Team Tools</title>
+    <meta name="robots" content="noindex, nofollow">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a0000 100%);
+            color: #fff;
+            min-height: 100vh;
+        }
+
+        /* Top Navigation Bar */
+        .navbar {
+            background: rgba(26, 0, 0, 0.95);
+            border-bottom: 2px solid #ff3333;
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 20px rgba(255, 51, 51, 0.3);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .navbar-brand {
+            font-size: 1.5em;
+            color: #ff6666;
+            font-weight: bold;
+        }
+
+        .navbar-user {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .user-info {
+            color: #ffcccc;
+        }
+
+        .btn-logout {
+            padding: 10px 25px;
+            background: linear-gradient(135deg, #ff3333, #ff6666);
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-family: 'Courier New', monospace;
+            font-size: 1em;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+
+        .btn-logout:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 51, 51, 0.4);
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        /* Warning Banner */
+        .warning-banner {
+            background: rgba(255, 0, 0, 0.2);
+            border: 2px solid #ff0000;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 40px;
+            text-align: center;
+            font-weight: bold;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.8; }
+        }
+
+        h1 {
+            color: #ff6666;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #ffcccc;
+            margin-bottom: 40px;
+            font-size: 1.2em;
+        }
+
+        /* Tools Grid */
+        .tools-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 30px;
+            margin-top: 40px;
+        }
+
+        .tool-card {
+            background: linear-gradient(135deg, #1a0000, #0a0a0a);
+            border: 2px solid #ff3333;
+            border-radius: 15px;
+            padding: 30px;
+            transition: all 0.3s;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .tool-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: linear-gradient(90deg, #ff3333, #ff6666);
+            transform: scaleX(0);
+            transition: transform 0.3s;
+        }
+
+        .tool-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .tool-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(255, 51, 51, 0.5);
+            border-color: #ff6666;
+        }
+
+        .tool-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .tool-card h3 {
+            color: #ff6666;
+            font-size: 1.5em;
+        }
+
+        .tool-status {
+            padding: 5px 12px;
+            background: #00ff00;
+            color: #000;
+            border-radius: 5px;
+            font-size: 0.8em;
+            font-weight: bold;
+        }
+
+        .tool-card p {
+            color: #ffcccc;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        .tool-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .btn-tool {
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #333, #555);
+            color: #fff;
+            border: 1px solid #ff3333;
+            border-radius: 5px;
+            cursor: pointer;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-tool:hover {
+            background: linear-gradient(135deg, #ff3333, #ff6666);
+            transform: translateY(-2px);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #ff3333, #ff6666);
+        }
+
+        /* Stats Section */
+        .stats-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #1a0000, #0a0a0a);
+            border: 1px solid #ff3333;
+            border-radius: 10px;
+            padding: 25px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 2.5em;
+            color: #ff6666;
+            font-weight: bold;
+        }
+
+        .stat-label {
+            color: #ffcccc;
+            margin-top: 10px;
+            font-size: 0.9em;
+        }
+
+        /* Quick Links */
+        .quick-links {
+            background: linear-gradient(135deg, #1a0000, #0a0a0a);
+            border: 2px solid #ff3333;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 40px;
+        }
+
+        .quick-links h2 {
+            color: #ff6666;
+            margin-bottom: 20px;
+        }
+
+        .quick-links ul {
+            list-style: none;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+        }
+
+        .quick-links a {
+            color: #ff9999;
+            text-decoration: none;
+            padding: 10px 15px;
+            display: block;
+            border: 1px solid #ff3333;
+            border-radius: 5px;
+            transition: all 0.3s;
+        }
+
+        .quick-links a:hover {
+            background: rgba(255, 51, 51, 0.2);
+            color: #ff6666;
+            transform: translateX(5px);
+        }
+
+        @media (max-width: 768px) {
+            .navbar {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .tools-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <div class="navbar">
+        <div class="navbar-brand">🛡️ TheGAVL Red Team Tools</div>
+        <div class="navbar-user">
+            <span class="user-info" id="userInfo">Loading...</span>
+            <button class="btn-logout" onclick="logout()">🚪 Logout</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Warning Banner -->
+        <div class="warning-banner">
+            ⚠️ REMINDER: All tools are for AUTHORIZED USE ONLY. All activity is logged and monitored. Unauthorized use will be reported to law enforcement.
+        </div>
+
+        <h1>Welcome to Your Security Toolkit</h1>
+        <p class="subtitle">Professional Security Assessment & Penetration Testing Suite</p>
+
+        <!-- Stats Section -->
+        <div class="stats-section">
+            <div class="stat-card">
+                <div class="stat-value">11</div>
+                <div class="stat-label">Available Tools</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">24/7</div>
+                <div class="stat-label">Support Available</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">100%</div>
+                <div class="stat-label">Legal Compliance</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="memberSince">2025</div>
+                <div class="stat-label">Member Since</div>
+            </div>
+        </div>
+
+        <!-- Quick Links -->
+        <div class="quick-links">
+            <h2>📚 Quick Links</h2>
+            <ul>
+                <li><a href="terms-of-service.html" target="_blank">📄 Terms of Service</a></li>
+                <li><a href="acceptable-use-policy.html" target="_blank">⚖️ Acceptable Use Policy</a></li>
+                <li><a href="mailto:support@thegavl.com">💬 Technical Support</a></li>
+                <li><a href="mailto:legal@thegavl.com">⚖️ Legal Questions</a></li>
+            </ul>
+        </div>
+
+        <!-- Tools Grid -->
+        <h2 style="color: #ff6666; font-size: 2em; margin-bottom: 20px; text-align: center;">Available Security Tools</h2>
+
+        <div class="tools-grid">
+            <div class="tool-card">
+                <div class="tool-header">
+                    <h3>🔍 AuroraScan</h3>
+                    <span class="tool-status">READY</span>
+                </div>
+                <p>Network reconnaissance and port scanning utility for discovering open services and potential attack vectors.</p>
+                <div class="tool-actions">
+                    <button class="btn-tool btn-primary" onclick="launchTool('aurorascan')">🚀 Launch</button>
+                    <button class="btn-tool" onclick="viewDocs('aurorascan')">📖 Docs</button>
+                </div>
+            </div>
+
+            <div class="tool-card">
+                <div class="tool-header">
+                    <h3>💉 CipherSpear</h3>
+                    <span class="tool-status">READY</span>
+                </div>
+                <p>Database injection analysis tool for testing SQL injection vulnerabilities in web applications.</p>
+                <div class="tool-actions">
+                    <button class="btn-tool btn-primary" onclick="launchTool('cipherspear')">🚀 Launch</button>
+                    <button class="btn-tool" onclick="viewDocs('cipherspear')">📖 Docs</button>
+                </div>
+            </div>
+
+            <div class="tool-card">
+                <div class="tool-header">
+                    <h3>📁 DirReaper</h3>
+                    <span class="tool-status">READY</span>
+                </div>
+                <p>Directory enumeration and file discovery tool for uncovering hidden web resources and endpoints.</p>
+                <div class="tool-actions">
+                    <button class="btn-tool btn-primary" onclick="launchTool('dirreaper')">🚀 Launch</button>
+                    <button class="btn-tool" onclick="viewDocs('dirreaper')">📖 Docs</button>
+                </div>
+            </div>
+
+            <div class="tool-card">
+                <div class="tool-header">
+                    <h3>🔑 MythicKey</h3>
+                    <span class="tool-status">READY</span>
+                </div>
+                <p>Credential analysis and password auditing tool for testing authentication security.</p>
+                <div class="tool-actions">
+                    <button class="btn-tool btn-primary" onclick="launchTool('mythickey')">🚀 Launch</button>
+                    <button class="btn-tool" onclick="viewDocs('mythickey')">📖 Docs</button>
+                </div>
+            </div>
+
+            <div class="tool-card">
+                <div class="tool-header">
+                    <h3>🐍 NemesisHydra</h3>
+                    <span class="tool-status">READY</span>
+                </div>
+                <p>Multi-protocol authentication testing tool for brute-force resistance evaluation.</p>
+                <div class="tool-actions">
+                    <button class="btn-tool btn-primary" onclick="launchTool('nemesishydra')">🚀 Launch</button>
+                    <button class="btn-tool" onclick="viewDocs('nemesishydra')">📖 Docs</button>
+                </div>
+            </div>
+
+            <div class="tool-card">
+                <div class="tool-header">
+                    <h3>🗺️ NmapPro</h3>
+                    <span class="tool-status">READY</span>
+                </div>
+                <p>Advanced port scanning and network mapping utility with custom fingerprinting capabilities.</p>
+                <div class="tool-actions">
+                    <button class="btn-tool btn-primary" onclick="launchTool('nmappro')">🚀 Launch</button>
+                    <button class="btn-tool" onclick="viewDocs('nmappro')">📖 Docs</button>
+                </div>
+            </div>
+
+            <div class="tool-card">
+                <div class="tool-header">
+                    <h3>🛡️ ObsidianHunt</h3>
+                    <span class="tool-status">READY</span>
+                </div>
+                <p>Host hardening audit tool for evaluating system security configurations and compliance.</p>
+                <div class="tool-actions">
+                    <button class="btn-tool btn-primary" onclick="launchTool('obsidianhunt')">🚀 Launch</button>
+                    <button class="btn-tool" onclick="viewDocs('obsidianhunt')">📖 Docs</button>
+                </div>
+            </div>
+
+            <div class="tool-card">
+                <div class="tool-header">
+                    <h3>👻 ProxyPhantom</h3>
+                    <span class="tool-status">READY</span>
+                </div>
+                <p>Proxy management and anonymity tool for secure testing environments.</p>
+                <div class="tool-actions">
+                    <button class="btn-tool btn-primary" onclick="launchTool('proxyphantom')">🚀 Launch</button>
+                    <button class="btn-tool" onclick="viewDocs('proxyphantom')">📖 Docs</button>
+                </div>
+            </div>
+
+            <div class="tool-card">
+                <div class="tool-header">
+                    <h3>⚔️ PayloadForge</h3>
+                    <span class="tool-status">READY</span>
+                </div>
+                <p>Payload generation and encoding utility for penetration testing scenarios.</p>
+                <div class="tool-actions">
+                    <button class="btn-tool btn-primary" onclick="launchTool('payloadforge')">🚀 Launch</button>
+                    <button class="btn-tool" onclick="viewDocs('payloadforge')">📖 Docs</button>
+                </div>
+            </div>
+
+            <div class="tool-card">
+                <div class="tool-header">
+                    <h3>🔬 OSINT Workflows</h3>
+                    <span class="tool-status">READY</span>
+                </div>
+                <p>Open-source intelligence gathering toolkit for reconnaissance and information analysis.</p>
+                <div class="tool-actions">
+                    <button class="btn-tool btn-primary" onclick="launchTool('osint')">🚀 Launch</button>
+                    <button class="btn-tool" onclick="viewDocs('osint')">📖 Docs</button>
+                </div>
+            </div>
+
+            <div class="tool-card">
+                <div class="tool-header">
+                    <h3>🎯 VulnHunter</h3>
+                    <span class="tool-status">READY</span>
+                </div>
+                <p>Comprehensive vulnerability scanner with 50+ security checks and CVE database integration.</p>
+                <div class="tool-actions">
+                    <button class="btn-tool btn-primary" onclick="launchTool('vulnhunter')">🚀 Launch</button>
+                    <button class="btn-tool" onclick="viewDocs('vulnhunter')">📖 Docs</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // TODO: Replace with your Supabase credentials
+        const SUPABASE_URL = 'https://your-project.supabase.co';
+        const SUPABASE_ANON_KEY = 'your-anon-key-here';
+
+        // Initialize Supabase
+        const { createClient } = supabase;
+        const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        // Check authentication on page load
+        async function checkAuth() {
+            const { data: { session } } = await supabaseClient.auth.getSession();
+
+            if (!session) {
+                // Not logged in, redirect to login page
+                window.location.href = 'login.html';
+                return;
+            }
+
+            // Display user info
+            const user = session.user;
+            const userInfo = document.getElementById('userInfo');
+            const userName = user.user_metadata?.name || user.email.split('@')[0];
+            userInfo.textContent = `👤 ${userName}`;
+
+            // Display member since date
+            const memberSince = new Date(user.created_at).getFullYear();
+            document.getElementById('memberSince').textContent = memberSince;
+
+            // Log dashboard access (optional)
+            await supabaseClient.from('dashboard_access').insert([{
+                user_id: user.id,
+                accessed_at: new Date().toISOString()
+            }]).catch(err => console.log('Access logging failed:', err));
+        }
+
+        // Logout function
+        async function logout() {
+            const { error } = await supabaseClient.auth.signOut();
+            if (error) {
+                console.error('Logout error:', error);
+                alert('Logout failed. Please try again.');
+            } else {
+                window.location.href = 'index.html';
+            }
+        }
+
+        // Launch tool function
+        function launchTool(toolName) {
+            // TODO: Implement tool launching logic
+            // This could open a new window, download a tool, or redirect to a tool page
+            alert(`Launching ${toolName}...\n\nTool launching will be implemented in the next phase.\n\nFor now, download and run locally:\npython -m tools.${toolName} --gui`);
+        }
+
+        // View documentation function
+        function viewDocs(toolName) {
+            // TODO: Implement documentation viewing
+            alert(`Opening documentation for ${toolName}...\n\nDocumentation pages will be added in the next phase.`);
+        }
+
+        // Initialize on page load
+        checkAuth();
+    </script>
+</body>
+</html>
+
+<!-- Copyright (c) 2025 Joshua Hendricks Cole (DBA: Corporation of Light). All Rights Reserved. PATENT PENDING. -->
