@@ -53,35 +53,6 @@
             height: 100%;
         }
 
-        /* Demo Banner */
-        .demo-banner {
-            background: linear-gradient(135deg, #00ff88, #00d4ff, #a855f7);
-            color: #000;
-            text-align: center;
-            padding: 20px;
-            font-weight: 900;
-            font-size: 1.5em;
-            position: sticky;
-            top: 0;
-            z-index: 1001;
-            box-shadow: 0 4px 30px rgba(0, 255, 136, 0.7);
-            animation: demo-pulse 3s ease-in-out infinite;
-            text-transform: uppercase;
-            letter-spacing: 0.2em;
-            border-bottom: 3px solid #00ff88;
-        }
-
-        @keyframes demo-pulse {
-            0%, 100% {
-                background: linear-gradient(135deg, #00ff88, #00d4ff, #a855f7);
-                box-shadow: 0 4px 30px rgba(0, 255, 136, 0.7);
-            }
-            50% {
-                background: linear-gradient(135deg, #a855f7, #00d4ff, #00ff88);
-                box-shadow: 0 4px 40px rgba(168, 85, 247, 0.9);
-            }
-        }
-
         /* Warning Banner */
         .warning-banner {
             background: #ff0000;
@@ -91,7 +62,7 @@
             font-weight: bold;
             font-size: 1.1em;
             position: sticky;
-            top: 80px;
+            top: 0;
             z-index: 1000;
             box-shadow: 0 4px 20px rgba(255, 0, 0, 0.5);
             animation: pulse 2s infinite;
@@ -100,17 +71,6 @@
         @keyframes pulse {
             0%, 100% { opacity: 1; }
             50% { opacity: 0.8; }
-        }
-
-        /* Matrix Rain Background Canvas */
-        #matrixCanvas {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: -1;
-            pointer-events: none;
         }
 
         .container {
@@ -300,9 +260,6 @@
     </style>
 </head>
 <body>
-    <!-- Matrix Rain Background -->
-    <canvas id="matrixCanvas"></canvas>
-
     <!-- Blue Nebula Background -->
     <div class="nebula-container">
         <div class="space-background"></div>
@@ -311,21 +268,10 @@
         <canvas id="dust"></canvas>
     </div>
 
-    <!-- Demo Banner -->
-    <div class="demo-banner">
-        🎮 DEMONSTRATION MODE - Interactive Security Tools Showcase
-    </div>
-
     <!-- Warning Banner -->
     <div class="warning-banner">
         ⚠️ AUTHORIZED USE ONLY - Unauthorized access or misuse of these tools is illegal and punishable by law (CFAA 18 U.S.C. § 1030)
     </div>
-
-    <!-- Live Terminal Container -->
-    <div id="liveTerminalContainer"></div>
-
-    <!-- Network Packets Container -->
-    <div id="networkPacketsContainer"></div>
 
     <div class="container">
         <!-- Header -->
@@ -694,32 +640,6 @@
             requestAnimationFrame(animateNebula);
         }
         animateNebula();
-    </script>
-
-    <!-- Visual Effects Library -->
-    <script src="js/visual-effects.js"></script>
-
-    <!-- Initialize Visual Effects -->
-    <script>
-        // Initialize Matrix Rain background
-        const matrixRain = new window.VisualEffects.MatrixRain('matrixCanvas', {
-            fontSize: 14,
-            color: '#00ff88',
-            opacity: 0.08,
-            speed: 40
-        });
-
-        // Initialize Network Packets
-        const networkPackets = new window.VisualEffects.NetworkPackets('networkPacketsContainer');
-
-        // Initialize Live Terminal
-        const liveTerminal = new window.VisualEffects.LiveTerminal('liveTerminalContainer');
-
-        // Start demo commands for available tools
-        liveTerminal.startDemoCommands('default');
-
-        console.log('%c🛡️ Red Team Tools - DEMO MODE', 'font-size: 20px; font-weight: bold; color: #00ff88; text-shadow: 0 0 10px #00ff88;');
-        console.log('%cVisual effects active: Matrix Rain, Network Packets, Live Terminal', 'color: #00d4ff;');
     </script>
 </body>
 </html>
