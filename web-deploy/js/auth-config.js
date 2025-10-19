@@ -18,8 +18,8 @@
 
 const AUTH_CONFIG = {
     // Supabase Configuration
-    SUPABASE_URL: process.env.SUPABASE_URL || 'https://trokobwiphidmrmhwkni.supabase.co',
-    SUPABASE_ANON_KEY: process.env.SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRyb2tvYndpcGhpZG1ybWh3a25pIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjA2NTk4MTQsImV4cCI6MjA3NjIzNTgxNH0.D1iTVxtL481Tk6Jr7qSInjOOCZhWmuHT8g-cE_ZT-dM',
+    SUPABASE_URL: process.env.SUPABASE_URL || 'https://urqlitnxxszwmeoscppx.supabase.co',
+    SUPABASE_ANON_KEY: process.env.SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVycWxpdG54eHN6d21lb3NjcHhrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjA2ODE0OTksImV4cCI6MjA3NjI1NzQ5OX0.t89WETnuEVablfeX7VgNtA5IqOr22jrXDhwHaWSXtRE',
 
     // Application Settings
     APP_NAME: 'TheGAVL Red Team Tools',
