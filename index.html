@@ -15,10 +15,42 @@
 
         body {
             font-family: 'Courier New', monospace;
-            background: linear-gradient(135deg, #0a0a0a 0%, #1a0000 100%);
+            background: #000;
             color: #fff;
             min-height: 100vh;
             overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Blue Nebula Background */
+        .nebula-container {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            z-index: -1;
+        }
+
+        .space-background {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background:
+                radial-gradient(ellipse at 30% 40%, rgba(0, 120, 215, 0.3) 0%, transparent 40%),
+                radial-gradient(ellipse at 70% 30%, rgba(0, 255, 255, 0.2) 0%, transparent 45%),
+                radial-gradient(ellipse at 50% 60%, rgba(0, 100, 200, 0.25) 0%, transparent 40%),
+                radial-gradient(ellipse at 20% 70%, rgba(100, 200, 255, 0.2) 0%, transparent 35%),
+                radial-gradient(ellipse at 80% 80%, rgba(0, 191, 255, 0.15) 0%, transparent 40%),
+                #000;
+        }
+
+        canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
         }
 
         /* Warning Banner */
@@ -74,12 +106,13 @@
 
         /* Legal Notice */
         .legal-notice {
-            background: linear-gradient(135deg, #330000, #1a0000);
-            border: 2px solid #ff3333;
+            background: rgba(10, 10, 20, 0.8);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(0, 191, 255, 0.5);
             border-radius: 10px;
             padding: 30px;
             margin-bottom: 40px;
-            box-shadow: 0 10px 40px rgba(255, 51, 51, 0.3);
+            box-shadow: 0 10px 40px rgba(0, 191, 255, 0.3);
         }
 
         .legal-notice h2 {
@@ -112,8 +145,9 @@
         }
 
         .tool-card {
-            background: linear-gradient(135deg, #1a0000, #0a0a0a);
-            border: 1px solid #ff3333;
+            background: rgba(10, 10, 30, 0.6);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(0, 191, 255, 0.4);
             border-radius: 10px;
             padding: 30px;
             transition: all 0.3s;
@@ -122,8 +156,9 @@
 
         .tool-card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 15px 40px rgba(255, 51, 51, 0.4);
-            border-color: #ff6666;
+            box-shadow: 0 15px 40px rgba(0, 191, 255, 0.5);
+            border-color: rgba(0, 255, 255, 0.7);
+            background: rgba(10, 10, 40, 0.8);
         }
 
         .tool-card h3 {
@@ -153,8 +188,9 @@
             text-align: center;
             margin: 60px 0;
             padding: 60px 40px;
-            background: linear-gradient(135deg, #330000, #0a0a0a);
-            border: 2px solid #ff3333;
+            background: rgba(10, 10, 30, 0.7);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(0, 191, 255, 0.5);
             border-radius: 15px;
         }
 
@@ -222,8 +258,27 @@
             .btn { padding: 15px 30px; font-size: 1.1em; }
         }
     </style>
+    <!-- Google Tag Manager -->
+    <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+    'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+    })(window,document,'script','dataLayer','GTM-PTHBBMZF');</script>
+    <!-- End Google Tag Manager -->
 </head>
 <body>
+    <!-- Google Tag Manager (noscript) -->
+    <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PTHBBMZF"
+    height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+    <!-- End Google Tag Manager (noscript) -->
+    <!-- Blue Nebula Background -->
+    <div class="nebula-container">
+        <div class="space-background"></div>
+        <canvas id="stars"></canvas>
+        <canvas id="nebula"></canvas>
+        <canvas id="dust"></canvas>
+    </div>
+
     <!-- Warning Banner -->
     <div class="warning-banner">
         ⚠️ AUTHORIZED USE ONLY - Unauthorized access or misuse of these tools is illegal and punishable by law (CFAA 18 U.S.C. § 1030)
@@ -416,6 +471,187 @@
             Law Enforcement Inquiries: <a href="mailto:lawenforcement@thegavl.com">lawenforcement@thegavl.com</a> (24/7)
         </p>
     </footer>
+
+    <script>
+        // Canvas setup for blue nebula
+        const starsCanvas = document.getElementById('stars');
+        const starsCtx = starsCanvas.getContext('2d');
+        const nebulaCanvas = document.getElementById('nebula');
+        const nebulaCtx = nebulaCanvas.getContext('2d');
+        const dustCanvas = document.getElementById('dust');
+        const dustCtx = dustCanvas.getContext('2d');
+
+        function resizeCanvases() {
+            [starsCanvas, nebulaCanvas, dustCanvas].forEach(canvas => {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+            });
+            drawSpace();
+        }
+        resizeCanvases();
+        window.addEventListener('resize', resizeCanvases);
+
+        // Create star field
+        function drawStarField() {
+            starsCtx.fillStyle = '#000';
+            starsCtx.fillRect(0, 0, starsCanvas.width, starsCanvas.height);
+
+            // Tiny background stars
+            for (let i = 0; i < 2500; i++) {
+                const x = Math.random() * starsCanvas.width;
+                const y = Math.random() * starsCanvas.height;
+                const size = Math.random() * 0.8;
+                const brightness = Math.random();
+
+                starsCtx.fillStyle = `rgba(255, 255, 255, ${brightness})`;
+                starsCtx.fillRect(x, y, size, size);
+            }
+
+            // Small blue-tinted stars
+            for (let i = 0; i < 600; i++) {
+                const x = Math.random() * starsCanvas.width;
+                const y = Math.random() * starsCanvas.height;
+                const size = Math.random() * 1.5 + 0.5;
+
+                const colors = [
+                    'rgba(255, 255, 255, 0.9)',
+                    'rgba(200, 230, 255, 0.9)',
+                    'rgba(150, 200, 255, 0.9)',
+                    'rgba(100, 180, 255, 0.9)'
+                ];
+                const color = colors[Math.floor(Math.random() * colors.length)];
+
+                starsCtx.fillStyle = color;
+                starsCtx.beginPath();
+                starsCtx.arc(x, y, size/2, 0, Math.PI * 2);
+                starsCtx.fill();
+            }
+
+            // Bright stars with cyan glow
+            for (let i = 0; i < 60; i++) {
+                const x = Math.random() * starsCanvas.width;
+                const y = Math.random() * starsCanvas.height;
+                const size = Math.random() * 3 + 1;
+
+                // Cyan glow
+                const gradient = starsCtx.createRadialGradient(x, y, 0, x, y, size * 4);
+                gradient.addColorStop(0, 'rgba(255, 255, 255, 0.8)');
+                gradient.addColorStop(0.2, 'rgba(0, 255, 255, 0.3)');
+                gradient.addColorStop(1, 'transparent');
+
+                starsCtx.fillStyle = gradient;
+                starsCtx.fillRect(x - size * 4, y - size * 4, size * 8, size * 8);
+
+                // Core
+                starsCtx.fillStyle = 'white';
+                starsCtx.beginPath();
+                starsCtx.arc(x, y, size/2, 0, Math.PI * 2);
+                starsCtx.fill();
+            }
+        }
+
+        // Create blue nebula clouds
+        function drawNebula() {
+            nebulaCtx.clearRect(0, 0, nebulaCanvas.width, nebulaCanvas.height);
+
+            // Main blue nebula cloud
+            const mainGradient = nebulaCtx.createRadialGradient(
+                nebulaCanvas.width * 0.5, nebulaCanvas.height * 0.4, 0,
+                nebulaCanvas.width * 0.5, nebulaCanvas.height * 0.4, 600
+            );
+            mainGradient.addColorStop(0, 'rgba(0, 120, 215, 0.4)');
+            mainGradient.addColorStop(0.3, 'rgba(0, 180, 255, 0.3)');
+            mainGradient.addColorStop(0.6, 'rgba(0, 100, 200, 0.2)');
+            mainGradient.addColorStop(1, 'transparent');
+
+            nebulaCtx.fillStyle = mainGradient;
+            nebulaCtx.fillRect(0, 0, nebulaCanvas.width, nebulaCanvas.height);
+
+            // Cyan cloud
+            const cyanGradient = nebulaCtx.createRadialGradient(
+                nebulaCanvas.width * 0.3, nebulaCanvas.height * 0.6, 0,
+                nebulaCanvas.width * 0.3, nebulaCanvas.height * 0.6, 400
+            );
+            cyanGradient.addColorStop(0, 'rgba(0, 255, 255, 0.3)');
+            cyanGradient.addColorStop(0.4, 'rgba(0, 200, 255, 0.2)');
+            cyanGradient.addColorStop(1, 'transparent');
+
+            nebulaCtx.fillStyle = cyanGradient;
+            nebulaCtx.fillRect(0, 0, nebulaCanvas.width, nebulaCanvas.height);
+
+            // Teal wisps
+            const tealGradient = nebulaCtx.createRadialGradient(
+                nebulaCanvas.width * 0.7, nebulaCanvas.height * 0.3, 0,
+                nebulaCanvas.width * 0.7, nebulaCanvas.height * 0.3, 350
+            );
+            tealGradient.addColorStop(0, 'rgba(0, 150, 200, 0.3)');
+            tealGradient.addColorStop(0.5, 'rgba(0, 100, 150, 0.15)');
+            tealGradient.addColorStop(1, 'transparent');
+
+            nebulaCtx.fillStyle = tealGradient;
+            nebulaCtx.fillRect(0, 0, nebulaCanvas.width, nebulaCanvas.height);
+        }
+
+        // Create dark dust lanes
+        function drawDustLanes() {
+            dustCtx.clearRect(0, 0, dustCanvas.width, dustCanvas.height);
+
+            // Dark dust lane
+            dustCtx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+            dustCtx.beginPath();
+            dustCtx.moveTo(dustCanvas.width * 0.8, 0);
+            dustCtx.quadraticCurveTo(
+                dustCanvas.width * 0.6, dustCanvas.height * 0.3,
+                dustCanvas.width * 0.4, dustCanvas.height * 0.5
+            );
+            dustCtx.quadraticCurveTo(
+                dustCanvas.width * 0.2, dustCanvas.height * 0.7,
+                0, dustCanvas.height
+            );
+            dustCtx.lineTo(0, 0);
+            dustCtx.closePath();
+            dustCtx.fill();
+
+            // Apply blur
+            dustCtx.filter = 'blur(40px)';
+            dustCtx.globalAlpha = 0.6;
+            dustCtx.drawImage(dustCanvas, 0, 0);
+            dustCtx.filter = 'none';
+            dustCtx.globalAlpha = 1;
+        }
+
+        // Draw everything
+        function drawSpace() {
+            drawStarField();
+            drawNebula();
+            drawDustLanes();
+        }
+
+        drawSpace();
+
+        // Animate subtle nebula movement
+        let time = 0;
+        function animateNebula() {
+            time += 0.001;
+
+            nebulaCtx.globalCompositeOperation = 'screen';
+            const shiftGradient = nebulaCtx.createRadialGradient(
+                nebulaCanvas.width * (0.5 + Math.sin(time) * 0.05),
+                nebulaCanvas.height * (0.5 + Math.cos(time) * 0.05),
+                0,
+                nebulaCanvas.width * 0.5, nebulaCanvas.height * 0.5, 400
+            );
+            shiftGradient.addColorStop(0, 'rgba(0, 191, 255, 0.01)');
+            shiftGradient.addColorStop(1, 'transparent');
+
+            nebulaCtx.fillStyle = shiftGradient;
+            nebulaCtx.fillRect(0, 0, nebulaCanvas.width, nebulaCanvas.height);
+            nebulaCtx.globalCompositeOperation = 'source-over';
+
+            requestAnimationFrame(animateNebula);
+        }
+        animateNebula();
+    </script>
 </body>
 </html>
 

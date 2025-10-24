@@ -1,6 +1,6 @@
 /**
  * Red Team Tools - Visual Effects Library
- * Copyright (c) 2025 Joshua Hendricks Cole (DBA: Corporation of Light). All Rights Reserved. PATENT PENDING.
+ * Copyright (c) 2025 Joshua Hendricks Cole (DBA: Corporation of Light). All Rights Reserved. Patents filed..
  *
  * Cyberpunk visual effects for pentest tool pages
  */

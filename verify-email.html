@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verify Email - TheGAVL Red Team Tools</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            max-width: 450px;
+            width: 100%;
+            padding: 40px;
+            text-align: center;
+        }
+
+        .header {
+            margin-bottom: 30px;
+        }
+
+        .icon {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 16px;
+            line-height: 1.5;
+        }
+
+        .message {
+            padding: 16px;
+            border-radius: 6px;
+            margin: 20px 0;
+            font-size: 14px;
+            display: none;
+        }
+
+        .message.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+            display: block;
+        }
+
+        .message.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            display: block;
+        }
+
+        .message.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+            display: block;
+        }
+
+        .message.warning {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeeba;
+            display: block;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 40px 0;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(102, 126, 234, 0.3);
+            border-radius: 50%;
+            border-top-color: #667eea;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .spinner-text {
+            color: #667eea;
+            margin-top: 15px;
+            font-weight: 500;
+        }
+
+        .content {
+            margin: 30px 0;
+        }
+
+        .steps {
+            text-align: left;
+            background: #f5f5f5;
+            padding: 20px;
+            border-radius: 6px;
+            margin: 20px 0;
+        }
+
+        .step {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 15px;
+        }
+
+        .step:last-child {
+            margin-bottom: 0;
+        }
+
+        .step-number {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            margin-right: 15px;
+            font-weight: bold;
+        }
+
+        .step-content {
+            flex: 1;
+        }
+
+        .step-content strong {
+            display: block;
+            color: #333;
+            margin-bottom: 4px;
+        }
+
+        .step-content p {
+            color: #666;
+            font-size: 14px;
+            margin: 0;
+        }
+
+        button {
+            padding: 12px 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 10px 5px;
+        }
+
+        button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .secondary-button {
+            background: #f0f0f0;
+            color: #333;
+        }
+
+        .secondary-button:hover {
+            background: #e0e0e0;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin: 30px 0;
+        }
+
+        .back-link {
+            margin-top: 30px;
+        }
+
+        .back-link a {
+            color: #667eea;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .back-link a:hover {
+            text-decoration: underline;
+        }
+
+        .email-display {
+            background: #f0f0f0;
+            padding: 10px 15px;
+            border-radius: 4px;
+            margin: 15px 0;
+            font-weight: 500;
+            color: #333;
+            word-break: break-all;
+        }
+
+        .timer {
+            color: #d32f2f;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+
+        .resend-instruction {
+            font-size: 14px;
+            color: #666;
+            margin: 15px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="icon">✉️</div>
+            <h1>Verify Your Email</h1>
+            <p>We've sent a verification link to your email address.</p>
+        </div>
+
+        <div id="message" class="message"></div>
+
+        <div id="loadingState">
+            <div class="loading" id="autoVerifying">
+                <div class="spinner"></div>
+                <p class="spinner-text">Checking verification status...</p>
+            </div>
+        </div>
+
+        <div id="pendingState" style="display: none;">
+            <div class="content">
+                <p style="color: #666; margin-bottom: 20px;">
+                    If you don't see the email in your inbox, check your spam folder.
+                </p>
+                <div id="emailDisplay" class="email-display" style="display: none;"></div>
+
+                <div class="steps">
+                    <div class="step">
+                        <div class="step-number">1</div>
+                        <div class="step-content">
+                            <strong>Check your email</strong>
+                            <p>Look for the verification link in your inbox</p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">2</div>
+                        <div class="step-content">
+                            <strong>Click the link</strong>
+                            <p>Open the link to verify your email address</p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">3</div>
+                        <div class="step-content">
+                            <strong>You're all set!</strong>
+                            <p>You'll be redirected to your dashboard</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="resend-instruction">
+                    <p>Didn't receive the email?</p>
+                    <p>
+                        <span id="resendTimer" style="display: none;">
+                            Please wait <span id="countdown">0</span>s before requesting a new email
+                        </span>
+                    </p>
+                </div>
+
+                <div class="button-group">
+                    <button id="resendBtn" onclick="resendEmail()">Resend Verification Email</button>
+                    <button class="secondary-button" onclick="goToLogin()">Back to Login</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="verifiedState" style="display: none;">
+            <div class="icon" style="background: #4caf50; margin: 20px auto;">✓</div>
+            <h1 style="color: #4caf50;">Email Verified!</h1>
+            <p style="color: #666; margin: 20px 0;">
+                Your email has been successfully verified. You can now access the dashboard.
+            </p>
+            <button onclick="window.location.href='/dashboard.html'" style="width: 100%;">
+                Go to Dashboard
+            </button>
+        </div>
+
+        <div id="errorState" style="display: none;">
+            <div class="icon" style="background: #d32f2f;">✕</div>
+            <h1 style="color: #d32f2f;">Verification Failed</h1>
+            <p id="errorMessage" style="color: #666; margin: 20px 0;"></p>
+            <div class="button-group">
+                <button id="errorResendBtn" onclick="resendEmail()" style="width: 100%;">
+                    Send New Verification Link
+                </button>
+                <button class="secondary-button" onclick="goToLogin()" style="width: 100%;">
+                    Back to Login
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Supabase JS SDK -->
+    <script async src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- Auth configuration -->
+    <script src="js/auth-config.js"></script>
+    <!-- Auth manager -->
+    <script src="js/auth.js"></script>
+
+    <script>
+        const authManager = new AuthManager();
+        let resendCountdown = 0;
+        const MAX_RESEND_DELAY = 60; // 60 seconds
+
+        async function checkVerification() {
+            try {
+                // Get current session - if user is verified, they'll have a valid session
+                const { data: { session } } = await authManager.supabase.auth.getSession();
+
+                if (session && session.user && session.user.email_confirmed_at) {
+                    showVerified();
+                    return;
+                }
+
+                // Check if there's a confirmation token in URL
+                const hash = window.location.hash.substring(1);
+                const params = new URLSearchParams(hash);
+                const token = params.get('access_token');
+                const type = params.get('type');
+
+                if (token && type === 'signup') {
+                    // User clicked the link, token is valid
+                    showVerified();
+                    return;
+                }
+
+                // Show pending verification state
+                showPending();
+
+            } catch (error) {
+                console.error('Verification check error:', error);
+                showError('Unable to verify email: ' + error.message);
+            }
+        }
+
+        function showMessage(text, type = 'info') {
+            const messageEl = document.getElementById('message');
+            messageEl.textContent = text;
+            messageEl.className = 'message ' + type;
+        }
+
+        function showLoading(text) {
+            document.getElementById('loadingState').style.display = 'block';
+            document.getElementById('pendingState').style.display = 'none';
+            document.getElementById('verifiedState').style.display = 'none';
+            document.getElementById('errorState').style.display = 'none';
+            document.getElementById('autoVerifying').style.display = 'block';
+            document.querySelector('.spinner-text').textContent = text || 'Checking verification status...';
+        }
+
+        function showPending() {
+            document.getElementById('loadingState').style.display = 'none';
+            document.getElementById('pendingState').style.display = 'block';
+            document.getElementById('verifiedState').style.display = 'none';
+            document.getElementById('errorState').style.display = 'none';
+            showMessage('', '');
+
+            // Get email from stored data if available
+            const signupEmail = sessionStorage.getItem('signupEmail');
+            if (signupEmail) {
+                document.getElementById('emailDisplay').textContent = signupEmail;
+                document.getElementById('emailDisplay').style.display = 'block';
+            }
+
+            startResendCountdown();
+        }
+
+        function showVerified() {
+            document.getElementById('loadingState').style.display = 'none';
+            document.getElementById('pendingState').style.display = 'none';
+            document.getElementById('verifiedState').style.display = 'block';
+            document.getElementById('errorState').style.display = 'none';
+        }
+
+        function showError(errorMsg) {
+            document.getElementById('loadingState').style.display = 'none';
+            document.getElementById('pendingState').style.display = 'none';
+            document.getElementById('verifiedState').style.display = 'none';
+            document.getElementById('errorState').style.display = 'block';
+            document.getElementById('errorMessage').textContent = errorMsg;
+        }
+
+        function startResendCountdown() {
+            const timerEl = document.getElementById('resendTimer');
+            const countdownEl = document.getElementById('countdown');
+            const resendBtn = document.getElementById('resendBtn');
+
+            // Check if we should show countdown
+            const lastResendTime = localStorage.getItem('lastResendTime');
+            if (lastResendTime) {
+                const elapsed = Math.floor((Date.now() - parseInt(lastResendTime)) / 1000);
+                resendCountdown = Math.max(0, MAX_RESEND_DELAY - elapsed);
+            }
+
+            if (resendCountdown > 0) {
+                timerEl.style.display = 'block';
+                resendBtn.disabled = true;
+
+                const interval = setInterval(() => {
+                    resendCountdown--;
+                    countdownEl.textContent = resendCountdown;
+
+                    if (resendCountdown <= 0) {
+                        clearInterval(interval);
+                        timerEl.style.display = 'none';
+                        resendBtn.disabled = false;
+                    }
+                }, 1000);
+            } else {
+                timerEl.style.display = 'none';
+                resendBtn.disabled = false;
+            }
+        }
+
+        async function resendEmail() {
+            try {
+                const email = sessionStorage.getItem('signupEmail');
+                if (!email) {
+                    showError('Email address not found. Please go back to sign up.');
+                    return;
+                }
+
+                showLoading('Sending verification email...');
+
+                // Resend signup email via Supabase
+                const { error } = await authManager.supabase.auth.resend({
+                    type: 'signup',
+                    email: email,
+                    options: {
+                        emailRedirectTo: AUTH_CONFIG.REDIRECT_URLS.afterSignup
+                    }
+                });
+
+                if (error) {
+                    showError('Error sending email: ' + error.message);
+                    return;
+                }
+
+                localStorage.setItem('lastResendTime', Date.now().toString());
+                showMessage('Verification email sent! Check your inbox.', 'success');
+                showPending();
+
+            } catch (error) {
+                console.error('Resend error:', error);
+                showError('Error sending email: ' + error.message);
+            }
+        }
+
+        function goToLogin() {
+            window.location.href = '/login.html';
+        }
+
+        // Check verification status when page loads
+        window.addEventListener('load', async () => {
+            // Give Supabase a moment to process the session
+            setTimeout(() => {
+                checkVerification();
+            }, 500);
+        });
+
+        // Also check periodically in case user verified in another window
+        setInterval(() => {
+            if (document.getElementById('pendingState').style.display !== 'none') {
+                checkVerification();
+            }
+        }, 5000); // Check every 5 seconds
+    </script>
+</body>
+</html>

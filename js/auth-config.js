@@ -1,6 +1,6 @@
 /**
  * Authentication Configuration
- * Copyright (c) 2025 Joshua Hendricks Cole (DBA: Corporation of Light). All Rights Reserved. PATENT PENDING.
+ * Copyright (c) 2025 Joshua Hendricks Cole (DBA: Corporation of Light). All Rights Reserved. Patents filed..
  *
  * SETUP INSTRUCTIONS:
  * 1. Create a Supabase account at https://supabase.com
@@ -18,8 +18,8 @@
 
 const AUTH_CONFIG = {
     // Supabase Configuration
-    SUPABASE_URL: process.env.SUPABASE_URL || 'https://urqlitnxxszwmeoscppx.supabase.co',
-    SUPABASE_ANON_KEY: process.env.SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVycWxpdG54eHN6d21lb3NjcHhrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjA2ODE0OTksImV4cCI6MjA3NjI1NzQ5OX0.t89WETnuEVablfeX7VgNtA5IqOr22jrXDhwHaWSXtRE',
+    SUPABASE_URL: process.env.SUPABASE_URL || 'https://cszoklkfdszqsxhufhhj.supabase.co',
+    SUPABASE_ANON_KEY: process.env.SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNzem9rbGtmZHN6cXN4aHVmaGhqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjExNzI0MzAsImV4cCI6MjA3Njc0ODQzMH0.HdqXrWVTPCQ2NYH-5ED_nx91a38UGPvTHjva4NzBG8I',
 
     // Application Settings
     APP_NAME: 'TheGAVL Red Team Tools',

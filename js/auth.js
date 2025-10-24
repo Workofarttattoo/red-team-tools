@@ -1,6 +1,6 @@
 /**
  * Authentication Module
- * Copyright (c) 2025 Joshua Hendricks Cole (DBA: Corporation of Light). All Rights Reserved. PATENT PENDING.
+ * Copyright (c) 2025 Joshua Hendricks Cole (DBA: Corporation of Light). All Rights Reserved. Patents filed..
  */
 
 class AuthManager {
