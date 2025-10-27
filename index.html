@@ -1,0 +1,862 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sovereign Security Toolkit - Professional Security Assessment Suite</title>
+
+    <!-- Google Tag Manager -->
+    <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+    'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+    })(window,document,'script','dataLayer','GTM-NVT3X6VR');</script>
+    <!-- End Google Tag Manager -->
+
+    <!-- Square Web Payments SDK -->
+    <script type="text/javascript" src="https://sandbox.web.squarecdn.com/v1/square.js"></script>
+
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --cyber-green: #00ff88;
+            --cyber-blue: #00ccff;
+            --cyber-purple: #9945ff;
+            --cyber-red: #ff4444;
+            --dark-bg: #0a0a0a;
+            --card-bg: rgba(255,255,255,0.05);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Courier New', monospace;
+            background: var(--dark-bg);
+            color: #fff;
+            line-height: 1.6;
+        }
+
+        /* Hero Section */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #1a0033 0%, #0a1929 50%, #001a1a 100%);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background:
+                repeating-linear-gradient(0deg, rgba(0,255,136,0.03) 0px, transparent 1px, transparent 2px, rgba(0,255,136,0.03) 3px),
+                repeating-linear-gradient(90deg, rgba(0,255,136,0.03) 0px, transparent 1px, transparent 2px, rgba(0,255,136,0.03) 3px);
+            animation: grid-scroll 20s linear infinite;
+        }
+
+        @keyframes grid-scroll {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(50px, 50px); }
+        }
+
+        .hero-content {
+            max-width: 1200px;
+            padding: 60px 40px;
+            text-align: center;
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero h1 {
+            font-size: 4em;
+            font-weight: 800;
+            margin-bottom: 20px;
+            background: linear-gradient(135deg, var(--cyber-green), var(--cyber-blue), var(--cyber-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: glow 3s ease-in-out infinite;
+        }
+
+        @keyframes glow {
+            0%, 100% { filter: brightness(1); }
+            50% { filter: brightness(1.3); }
+        }
+
+        .hero .tagline {
+            font-size: 1.8em;
+            color: rgba(255,255,255,0.8);
+            margin-bottom: 40px;
+            font-weight: 300;
+        }
+
+        .hero .value-prop {
+            font-size: 1.3em;
+            color: var(--cyber-green);
+            margin-bottom: 50px;
+        }
+
+        /* Container */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 80px 40px;
+        }
+
+        /* Section Headers */
+        .section-header {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+
+        .section-header h2 {
+            font-size: 3em;
+            color: var(--cyber-green);
+            margin-bottom: 20px;
+        }
+
+        .section-header p {
+            font-size: 1.3em;
+            color: rgba(255,255,255,0.7);
+        }
+
+        /* Tools Grid */
+        .tools-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin: 60px 0;
+        }
+
+        .tool-card {
+            background: var(--card-bg);
+            border: 2px solid rgba(0,255,136,0.2);
+            border-radius: 15px;
+            padding: 30px;
+            transition: all 0.3s ease;
+        }
+
+        .tool-card:hover {
+            border-color: var(--cyber-green);
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,255,136,0.2);
+        }
+
+        .tool-icon {
+            font-size: 3em;
+            margin-bottom: 20px;
+        }
+
+        .tool-card h3 {
+            font-size: 1.5em;
+            color: var(--cyber-blue);
+            margin-bottom: 15px;
+        }
+
+        .tool-card p {
+            color: rgba(255,255,255,0.7);
+            margin-bottom: 15px;
+        }
+
+        .tool-value {
+            font-size: 1.2em;
+            color: var(--cyber-green);
+            font-weight: 600;
+        }
+
+        /* Pricing Section */
+        .pricing-section {
+            background: linear-gradient(135deg, rgba(0,255,136,0.05) 0%, rgba(0,204,255,0.05) 100%);
+            padding: 80px 0;
+        }
+
+        .pricing-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 40px;
+            margin-top: 60px;
+        }
+
+        .pricing-card {
+            background: var(--card-bg);
+            border: 3px solid rgba(255,255,255,0.1);
+            border-radius: 20px;
+            padding: 40px;
+            text-align: center;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .pricing-card.featured {
+            border-color: var(--cyber-green);
+            transform: scale(1.05);
+        }
+
+        .pricing-card:hover {
+            transform: translateY(-10px) scale(1.02);
+            box-shadow: 0 20px 40px rgba(0,255,136,0.3);
+        }
+
+        .pricing-badge {
+            position: absolute;
+            top: -15px;
+            right: 20px;
+            background: var(--cyber-green);
+            color: #000;
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 0.9em;
+        }
+
+        .pricing-card h3 {
+            font-size: 2em;
+            color: var(--cyber-blue);
+            margin-bottom: 15px;
+        }
+
+        .pricing-card .price {
+            font-size: 3.5em;
+            color: var(--cyber-green);
+            font-weight: 800;
+            margin: 20px 0;
+        }
+
+        .pricing-card .price-subtitle {
+            font-size: 1.1em;
+            color: rgba(255,255,255,0.6);
+            margin-bottom: 30px;
+        }
+
+        .pricing-features {
+            text-align: left;
+            margin: 30px 0;
+        }
+
+        .pricing-features li {
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            font-size: 1.1em;
+        }
+
+        .pricing-features li:last-child {
+            border-bottom: none;
+        }
+
+        /* Buttons */
+        .btn {
+            display: inline-block;
+            padding: 18px 40px;
+            font-size: 1.2em;
+            font-weight: 700;
+            text-decoration: none;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: none;
+            font-family: inherit;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--cyber-green), var(--cyber-blue));
+            color: #000;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(0,255,136,0.4);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            border: 2px solid var(--cyber-green);
+            color: var(--cyber-green);
+        }
+
+        .btn-secondary:hover {
+            background: var(--cyber-green);
+            color: #000;
+        }
+
+        /* Features Comparison */
+        .comparison-table {
+            background: var(--card-bg);
+            border: 2px solid rgba(0,255,136,0.2);
+            border-radius: 20px;
+            padding: 40px;
+            margin: 60px 0;
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 20px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        th {
+            color: var(--cyber-green);
+            font-size: 1.3em;
+            font-weight: 700;
+        }
+
+        td {
+            font-size: 1.1em;
+        }
+
+        .check {
+            color: var(--cyber-green);
+            font-size: 1.5em;
+        }
+
+        /* ROI Calculator */
+        .roi-section {
+            background: linear-gradient(135deg, rgba(153,69,255,0.1) 0%, rgba(0,255,136,0.1) 100%);
+            padding: 80px 0;
+        }
+
+        .roi-calculator {
+            background: var(--card-bg);
+            border: 2px solid rgba(153,69,255,0.3);
+            border-radius: 20px;
+            padding: 50px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .roi-result {
+            background: linear-gradient(135deg, rgba(0,255,136,0.1) 0%, rgba(0,204,255,0.1) 100%);
+            border: 2px solid var(--cyber-green);
+            border-radius: 15px;
+            padding: 30px;
+            margin-top: 30px;
+            text-align: center;
+        }
+
+        .roi-result h3 {
+            font-size: 2em;
+            color: var(--cyber-green);
+            margin-bottom: 15px;
+        }
+
+        .roi-result .value {
+            font-size: 3em;
+            color: var(--cyber-blue);
+            font-weight: 800;
+        }
+
+        /* CTA Section */
+        .cta-section {
+            background: linear-gradient(135deg, #1a0033 0%, #0a1929 100%);
+            padding: 100px 40px;
+            text-align: center;
+        }
+
+        .cta-section h2 {
+            font-size: 3em;
+            color: var(--cyber-green);
+            margin-bottom: 30px;
+        }
+
+        .cta-section p {
+            font-size: 1.5em;
+            color: rgba(255,255,255,0.8);
+            margin-bottom: 50px;
+        }
+
+        /* Payment Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.9);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--dark-bg);
+            border: 3px solid var(--cyber-green);
+            border-radius: 20px;
+            padding: 50px;
+            max-width: 600px;
+            width: 90%;
+            position: relative;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 2em;
+            color: var(--cyber-red);
+            cursor: pointer;
+            border: none;
+            background: none;
+        }
+
+        .modal h3 {
+            font-size: 2em;
+            color: var(--cyber-green);
+            margin-bottom: 30px;
+        }
+
+        #card-container {
+            margin: 30px 0;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero h1 { font-size: 2.5em; }
+            .hero .tagline { font-size: 1.3em; }
+            .section-header h2 { font-size: 2em; }
+            .pricing-grid { grid-template-columns: 1fr; }
+            .tools-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Google Tag Manager (noscript) -->
+    <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-NVT3X6VR"
+    height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+    <!-- End Google Tag Manager (noscript) -->
+
+    <!-- Hero Section -->
+    <div class="hero">
+        <div class="hero-content">
+            <h1>⚔️ Sovereign Security Toolkit</h1>
+            <div class="tagline">Professional Security Assessment Suite</div>
+            <div class="value-prop">18 Military-Grade Tools • $24,000 Value • Production Ready</div>
+            <a href="#pricing" class="btn btn-primary">Get Started</a>
+            <a href="#tools" class="btn btn-secondary" style="margin-left: 20px;">Explore Tools</a>
+        </div>
+    </div>
+
+    <!-- Tools Section -->
+    <div id="tools" class="container">
+        <div class="section-header">
+            <h2>🛠️ Complete Security Arsenal</h2>
+            <p>18 professional tools covering every security assessment need</p>
+        </div>
+
+        <div class="tools-grid">
+            <div class="tool-card">
+                <div class="tool-icon">🔍</div>
+                <h3>AuroraScan</h3>
+                <p>Network reconnaissance and host discovery with agent-friendly behavior</p>
+                <div class="tool-value">$2,500 value</div>
+            </div>
+
+            <div class="tool-card">
+                <div class="tool-icon">💉</div>
+                <h3>CipherSpear</h3>
+                <p>Database injection analysis with read-only forensic mode</p>
+                <div class="tool-value">$3,000 value</div>
+            </div>
+
+            <div class="tool-card">
+                <div class="tool-icon">📡</div>
+                <h3>SkyBreaker</h3>
+                <p>Wireless network auditing and monitoring</p>
+                <div class="tool-value">$2,000 value</div>
+            </div>
+
+            <div class="tool-card">
+                <div class="tool-icon">🔑</div>
+                <h3>MythicKey</h3>
+                <p>Credential strength analysis (deterministic, offline)</p>
+                <div class="tool-value">$1,800 value</div>
+            </div>
+
+            <div class="tool-card">
+                <div class="tool-icon">📊</div>
+                <h3>SpectraTrace</h3>
+                <p>Packet inspection and protocol analysis</p>
+                <div class="tool-value">$2,200 value</div>
+            </div>
+
+            <div class="tool-card">
+                <div class="tool-icon">🎯</div>
+                <h3>NemesisHydra</h3>
+                <p>Authentication testing framework</p>
+                <div class="tool-value">$2,500 value</div>
+            </div>
+
+            <div class="tool-card">
+                <div class="tool-icon">🛡️</div>
+                <h3>ObsidianHunt</h3>
+                <p>Host hardening and compliance audit</p>
+                <div class="tool-value">$1,500 value</div>
+            </div>
+
+            <div class="tool-card">
+                <div class="tool-icon">⚡</div>
+                <h3>VectorFlux</h3>
+                <p>Payload staging and delivery framework</p>
+                <div class="tool-value">$3,500 value</div>
+            </div>
+
+            <div class="tool-card">
+                <div class="tool-icon">🌐</div>
+                <h3>DirReaper</h3>
+                <p>Intelligent directory enumeration</p>
+                <div class="tool-value">$1,200 value</div>
+            </div>
+
+            <div class="tool-card">
+                <div class="tool-icon">🔥</div>
+                <h3>HashSolver</h3>
+                <p>GPU-accelerated hash analysis</p>
+                <div class="tool-value">$1,800 value</div>
+            </div>
+
+            <div class="tool-card">
+                <div class="tool-icon">📝</div>
+                <h3>Scribe</h3>
+                <p>Automated assessment reporting</p>
+                <div class="tool-value">$1,000 value</div>
+            </div>
+
+            <div class="tool-card">
+                <div class="tool-icon">🕵️</div>
+                <h3>ProxyPhantom</h3>
+                <p>Intercepting proxy with TLS analysis</p>
+                <div class="tool-value">$2,000 value</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pricing Section -->
+    <div id="pricing" class="pricing-section">
+        <div class="container">
+            <div class="section-header">
+                <h2>💰 Choose Your Plan</h2>
+                <p>Professional security tools at a fraction of the cost</p>
+            </div>
+
+            <div class="pricing-grid">
+                <!-- Sandbox Plan -->
+                <div class="pricing-card">
+                    <h3>🧪 Sandbox</h3>
+                    <div class="price">FREE</div>
+                    <div class="price-subtitle">Try before you buy</div>
+                    <ul class="pricing-features">
+                        <li>✓ 3 core tools (read-only)</li>
+                        <li>✓ Demo datasets included</li>
+                        <li>✓ 7-day trial period</li>
+                        <li>✓ Community support</li>
+                        <li>✓ Educational use allowed</li>
+                    </ul>
+                    <button class="btn btn-secondary" onclick="window.location.href='#sandbox'">Start Free Trial</button>
+                </div>
+
+                <!-- Professional Plan -->
+                <div class="pricing-card featured">
+                    <div class="pricing-badge">MOST POPULAR</div>
+                    <h3>⚔️ Professional</h3>
+                    <div class="price">$299</div>
+                    <div class="price-subtitle">One-time purchase</div>
+                    <ul class="pricing-features">
+                        <li>✓ All 18 tools (full features)</li>
+                        <li>✓ Unlimited assessments</li>
+                        <li>✓ Forensic mode included</li>
+                        <li>✓ JSON/HTML reports</li>
+                        <li>✓ Priority email support</li>
+                        <li>✓ Lifetime updates</li>
+                        <li>✓ Commercial use license</li>
+                    </ul>
+                    <button class="btn btn-primary" onclick="openPaymentModal('pro', 299)">Buy Professional</button>
+                </div>
+
+                <!-- Enterprise Plan -->
+                <div class="pricing-card">
+                    <h3>🏢 Enterprise</h3>
+                    <div class="price">$4,999</div>
+                    <div class="price-subtitle">For security teams</div>
+                    <ul class="pricing-features">
+                        <li>✓ Everything in Professional</li>
+                        <li>✓ Multi-user licenses (10 seats)</li>
+                        <li>✓ Custom tool integration</li>
+                        <li>✓ API access for automation</li>
+                        <li>✓ White-label reporting</li>
+                        <li>✓ 24/7 phone support</li>
+                        <li>✓ Training & onboarding</li>
+                        <li>✓ Custom development (20 hours)</li>
+                    </ul>
+                    <button class="btn btn-primary" onclick="openPaymentModal('enterprise', 4999)">Buy Enterprise</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ROI Calculator -->
+    <div class="roi-section">
+        <div class="container">
+            <div class="section-header">
+                <h2>📈 Calculate Your ROI</h2>
+                <p>See how much you'll save vs buying tools separately</p>
+            </div>
+
+            <div class="roi-calculator">
+                <h3 style="color: var(--cyber-green); margin-bottom: 30px;">Cost Comparison</h3>
+
+                <table style="width: 100%; margin: 30px 0;">
+                    <tr>
+                        <td style="font-size: 1.3em; color: rgba(255,255,255,0.8);">Tools Value (18 tools):</td>
+                        <td style="font-size: 1.5em; color: var(--cyber-blue); text-align: right; font-weight: 700;">$24,000</td>
+                    </tr>
+                    <tr>
+                        <td style="font-size: 1.3em; color: rgba(255,255,255,0.8);">Sovereign Professional:</td>
+                        <td style="font-size: 1.5em; color: var(--cyber-green); text-align: right; font-weight: 700;">$299</td>
+                    </tr>
+                    <tr style="border-top: 2px solid var(--cyber-green);">
+                        <td style="font-size: 1.5em; color: var(--cyber-green); padding-top: 20px;">You Save:</td>
+                        <td style="font-size: 2em; color: #ffd700; text-align: right; font-weight: 800; padding-top: 20px;">$23,701</td>
+                    </tr>
+                </table>
+
+                <div class="roi-result">
+                    <h3>98.8% Discount</h3>
+                    <p style="font-size: 1.2em; color: rgba(255,255,255,0.8); margin-top: 15px;">
+                        That's like getting 17 tools completely FREE
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Features Comparison -->
+    <div class="container">
+        <div class="section-header">
+            <h2>📋 Feature Comparison</h2>
+            <p>Compare plans side-by-side</p>
+        </div>
+
+        <div class="comparison-table">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Feature</th>
+                        <th>Sandbox</th>
+                        <th>Professional</th>
+                        <th>Enterprise</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Number of Tools</td>
+                        <td>3 tools</td>
+                        <td>18 tools</td>
+                        <td>18 tools</td>
+                    </tr>
+                    <tr>
+                        <td>Read-Only Mode</td>
+                        <td><span class="check">✓</span></td>
+                        <td><span class="check">✓</span></td>
+                        <td><span class="check">✓</span></td>
+                    </tr>
+                    <tr>
+                        <td>Full Features</td>
+                        <td>—</td>
+                        <td><span class="check">✓</span></td>
+                        <td><span class="check">✓</span></td>
+                    </tr>
+                    <tr>
+                        <td>Commercial Use</td>
+                        <td>—</td>
+                        <td><span class="check">✓</span></td>
+                        <td><span class="check">✓</span></td>
+                    </tr>
+                    <tr>
+                        <td>User Licenses</td>
+                        <td>1</td>
+                        <td>1</td>
+                        <td>10</td>
+                    </tr>
+                    <tr>
+                        <td>API Access</td>
+                        <td>—</td>
+                        <td>—</td>
+                        <td><span class="check">✓</span></td>
+                    </tr>
+                    <tr>
+                        <td>White-Label Reports</td>
+                        <td>—</td>
+                        <td>—</td>
+                        <td><span class="check">✓</span></td>
+                    </tr>
+                    <tr>
+                        <td>Support Level</td>
+                        <td>Community</td>
+                        <td>Email (24h)</td>
+                        <td>Phone (24/7)</td>
+                    </tr>
+                    <tr>
+                        <td>Training Included</td>
+                        <td>—</td>
+                        <td>—</td>
+                        <td><span class="check">✓</span></td>
+                    </tr>
+                    <tr>
+                        <td>Custom Development</td>
+                        <td>—</td>
+                        <td>—</td>
+                        <td>20 hours</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- CTA Section -->
+    <div class="cta-section">
+        <h2>🚀 Ready to Elevate Your Security Practice?</h2>
+        <p>Join security professionals who trust Sovereign Security Toolkit</p>
+        <a href="#pricing" class="btn btn-primary" style="font-size: 1.3em;">Get Started Today</a>
+    </div>
+
+    <!-- Payment Modal -->
+    <div id="paymentModal" class="modal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closePaymentModal()">×</button>
+            <h3 id="modalTitle">Complete Your Purchase</h3>
+            <div id="modalDescription" style="font-size: 1.2em; color: rgba(255,255,255,0.7); margin-bottom: 30px;"></div>
+
+            <!-- Square Payment Form -->
+            <div id="card-container"></div>
+            <button id="card-button" class="btn btn-primary" style="width: 100%; margin-top: 20px;">Pay Now</button>
+
+            <div id="payment-status" style="margin-top: 20px; padding: 20px; border-radius: 10px; display: none;"></div>
+        </div>
+    </div>
+
+    <script>
+        // Payment modal management
+        let currentPlan = null;
+        let currentAmount = 0;
+
+        function openPaymentModal(plan, amount) {
+            currentPlan = plan;
+            currentAmount = amount;
+
+            const planNames = {
+                'pro': 'Professional Plan',
+                'enterprise': 'Enterprise Plan'
+            };
+
+            document.getElementById('modalTitle').textContent = `Purchase ${planNames[plan]}`;
+            document.getElementById('modalDescription').textContent = `Amount: $${amount.toLocaleString()}`;
+            document.getElementById('paymentModal').classList.add('active');
+
+            // Initialize Square payment form
+            initializeSquarePayment();
+        }
+
+        function closePaymentModal() {
+            document.getElementById('paymentModal').classList.remove('active');
+        }
+
+        // Square Payment Integration
+        async function initializeSquarePayment() {
+            // NOTE: Replace 'sandbox-sq0idb-XXXXX' with your actual Square Application ID
+            const applicationId = 'sandbox-sq0idb-XXXXX'; // REPLACE THIS
+            const locationId = 'LXXXXX'; // REPLACE THIS
+
+            try {
+                const payments = Square.payments(applicationId, locationId);
+                const card = await payments.card();
+                await card.attach('#card-container');
+
+                document.getElementById('card-button').addEventListener('click', async function() {
+                    const statusContainer = document.getElementById('payment-status');
+
+                    try {
+                        const result = await card.tokenize();
+                        if (result.status === 'OK') {
+                            // Send token to your backend
+                            const paymentResult = await processPayment(result.token, currentAmount, currentPlan);
+
+                            if (paymentResult.success) {
+                                statusContainer.style.display = 'block';
+                                statusContainer.style.background = 'rgba(0,255,136,0.2)';
+                                statusContainer.style.border = '2px solid var(--cyber-green)';
+                                statusContainer.innerHTML = `
+                                    <h3 style="color: var(--cyber-green);">✓ Payment Successful!</h3>
+                                    <p>Your license will be emailed to you shortly.</p>
+                                    <p>Order ID: ${paymentResult.orderId}</p>
+                                `;
+
+                                // Close modal after 3 seconds
+                                setTimeout(() => {
+                                    closePaymentModal();
+                                    window.location.href = '/download';
+                                }, 3000);
+                            }
+                        }
+                    } catch (e) {
+                        statusContainer.style.display = 'block';
+                        statusContainer.style.background = 'rgba(255,68,68,0.2)';
+                        statusContainer.style.border = '2px solid var(--cyber-red)';
+                        statusContainer.innerHTML = `
+                            <h3 style="color: var(--cyber-red);">✗ Payment Failed</h3>
+                            <p>${e.message}</p>
+                        `;
+                    }
+                });
+            } catch (e) {
+                console.error('Square initialization error:', e);
+                document.getElementById('card-container').innerHTML = `
+                    <div style="padding: 20px; background: rgba(255,68,68,0.2); border: 2px solid var(--cyber-red); border-radius: 10px;">
+                        <p style="color: var(--cyber-red);">Payment system initialization failed. Please contact support.</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Send payment to backend
+        async function processPayment(token, amount, plan) {
+            const response = await fetch('/api/process-payment', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    token: token,
+                    amount: amount * 100, // Convert to cents
+                    plan: plan
+                })
+            });
+
+            return await response.json();
+        }
+
+        // Smooth scroll for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth' });
+                }
+            });
+        });
+    </script>
+</body>
+</html>
