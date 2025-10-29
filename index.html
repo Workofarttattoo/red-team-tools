@@ -621,5 +621,58 @@
             });
         });
     </script>
+
+    <!-- Visitor Counter Snippet - Add to all landing pages -->
+    <!-- Copyright (c) 2025 Joshua Hendricks Cole -->
+
+    <div id="visitor-counter" style="position: fixed; bottom: 20px; right: 20px; background: rgba(0,0,0,0.8); color: white; padding: 15px 20px; border-radius: 8px; font-family: monospace; font-size: 14px; z-index: 9999; box-shadow: 0 4px 15px rgba(0,0,0,0.3);">
+        <div style="font-weight: bold; margin-bottom: 5px;">👁️ Visitors</div>
+        <div id="visitor-count">Loading...</div>
+    </div>
+
+    <script>
+    // Simple visitor counter using localStorage + server-side tracking
+    (function() {
+        const SITE_ID = window.location.hostname;
+        const API_ENDPOINT = 'https://api.aios.is/track-visit'; // TODO: Set up API
+
+        // Track visit locally
+        let visits = JSON.parse(localStorage.getItem('visitor_stats') || '{}');
+        if (!visits[SITE_ID]) visits[SITE_ID] = { count: 0, first: Date.now() };
+        visits[SITE_ID].count++;
+        visits[SITE_ID].last = Date.now();
+        localStorage.setItem('visitor_stats', JSON.stringify(visits));
+
+        // Display local count
+        document.getElementById('visitor-count').innerHTML = `
+            This session: ${visits[SITE_ID].count}<br>
+            <span style="font-size: 11px; opacity: 0.7;">Tracking since ${new Date(visits[SITE_ID].first).toLocaleDateString()}</span>
+        `;
+
+        // Send to server (if API exists)
+        fetch(API_ENDPOINT, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                site: SITE_ID,
+                timestamp: Date.now(),
+                path: window.location.pathname,
+                referrer: document.referrer
+            })
+        }).then(response => response.json())
+          .then(data => {
+              if (data.total_visits) {
+                  document.getElementById('visitor-count').innerHTML = `
+                      Total: ${data.total_visits.toLocaleString()}<br>
+                      Today: ${data.visits_today || 0}<br>
+                      <span style="font-size: 11px; opacity: 0.7;">You: Visit #${visits[SITE_ID].count}</span>
+                  `;
+              }
+          })
+          .catch(() => {
+              // API not available, keep local count
+          });
+    })();
+    </script>
 </body>
 </html>
