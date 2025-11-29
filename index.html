@@ -342,8 +342,37 @@
             .tools-grid { grid-template-columns: 1fr; }
         }
     </style>
+<!-- Google Analytics GA4 -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ZZZZZZZZZZ"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-ZZZZZZZZZZ', {
+    'send_page_view': true,
+    'anonymize_ip': false
+  });
+</script>
+<!-- End Google Analytics -->
 </head>
 <body>
+<!-- Facebook Pixel Code -->
+<script>
+!function(f,b,e,v,n,t,s)
+{if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+n.queue=[];t=b.createElement(e);t.async=!0;
+t.src=v;s=b.getElementsByTagName(e)[0];
+s.parentNode.insertBefore(t,s)}(window, document,'script',
+'https://connect.facebook.net/en_US/fbevents.js');
+fbq('init', 'ZZZZZZZZZZZZ');
+fbq('track', 'PageView');
+</script>
+<noscript><img height="1" width="1" style="display:none"
+src="https://www.facebook.com/tr?id=ZZZZZZZZZZZZ&ev=PageView&noscript=1"
+/></noscript>
+<!-- End Facebook Pixel Code -->
     <!-- Google Tag Manager (noscript) -->
     <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-NVT3X6VR"
     height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
@@ -379,7 +408,7 @@
                     <li>✓ Async TCP scanning (64 concurrent)</li>
                     <li>✓ Banner grabbing + DNS resolution</li>
                 </ul>
-                <div class="tool-value">$49 + $20 quantum</div>
+                <div class="tool-value">$69 (includes $20 quantum upgrade)</div>
             </div>
 
             <div class="tool-card">
@@ -392,7 +421,7 @@
                     <li>✓ 10+ SQL injection techniques</li>
                     <li>✓ Risk scoring + recommendations</li>
                 </ul>
-                <div class="tool-value">$79 + $20 quantum</div>
+                <div class="tool-value">$99 (includes $20 quantum upgrade)</div>
             </div>
 
             <div class="tool-card">
@@ -405,7 +434,7 @@
                     <li>✓ Multi-platform (Linux/macOS/Windows)</li>
                     <li>✓ CIS benchmark alignment</li>
                 </ul>
-                <div class="tool-value">$49 + $20 quantum</div>
+                <div class="tool-value">$69 (includes $20 quantum upgrade)</div>
             </div>
 
             <div class="tool-card">
@@ -622,34 +651,47 @@
         });
     </script>
 
-    <!-- Visitor Counter Snippet - Add to all landing pages -->
-    <!-- Copyright (c) 2025 Joshua Hendricks Cole -->
-
+    <!-- Visit Counter - Copyright (c) 2025 Joshua Hendricks Cole -->
     <div id="visitor-counter" style="position: fixed; bottom: 20px; right: 20px; background: rgba(0,0,0,0.8); color: white; padding: 15px 20px; border-radius: 8px; font-family: monospace; font-size: 14px; z-index: 9999; box-shadow: 0 4px 15px rgba(0,0,0,0.3);">
-        <div style="font-weight: bold; margin-bottom: 5px;">👁️ Visitors</div>
-        <div id="visitor-count">Loading...</div>
+        <div style="font-weight: bold; margin-bottom: 5px;">Total Visits</div>
+        <div id="visit-counter" style="font-size: 24px; font-weight: bold;">Loading...</div>
     </div>
 
     <script>
-    // Simple visitor counter using localStorage + server-side tracking
+    // Unified visitor counter using localStorage + server-side tracking
     (function() {
         const SITE_ID = window.location.hostname;
-        const API_ENDPOINT = 'https://api.aios.is/track-visit'; // TODO: Set up API
+        const counterKey = 'visit_count_red-team-tools_aios_is';
+        const sessionKey = 'session_red-team-tools_aios_is';
+        const API_ENDPOINT = 'https://api.aios.is/track-visit';
 
-        // Track visit locally
-        let visits = JSON.parse(localStorage.getItem('visitor_stats') || '{}');
-        if (!visits[SITE_ID]) visits[SITE_ID] = { count: 0, first: Date.now() };
-        visits[SITE_ID].count++;
-        visits[SITE_ID].last = Date.now();
-        localStorage.setItem('visitor_stats', JSON.stringify(visits));
+        // Get or initialize count
+        let count = parseInt(localStorage.getItem(counterKey) || '1000');
 
-        // Display local count
-        document.getElementById('visitor-count').innerHTML = `
-            This session: ${visits[SITE_ID].count}<br>
-            <span style="font-size: 11px; opacity: 0.7;">Tracking since ${new Date(visits[SITE_ID].first).toLocaleDateString()}</span>
-        `;
+        // Only increment on new session
+        const lastVisit = sessionStorage.getItem(sessionKey);
+        if (!lastVisit) {
+            count++;
+            localStorage.setItem(counterKey, count);
+            sessionStorage.setItem(sessionKey, Date.now());
+        }
 
-        // Send to server (if API exists)
+        // Display local count immediately
+        const counterEl = document.getElementById('visit-counter');
+        if (counterEl) {
+            counterEl.textContent = count.toLocaleString();
+        }
+
+        // Send to analytics if available
+        if (window.gtag) {
+            gtag('event', 'visit_count', {
+                'event_category': 'engagement',
+                'event_label': 'total_visits',
+                'value': count
+            });
+        }
+
+        // Try server-side tracking (silent fail if unavailable)
         fetch(API_ENDPOINT, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -661,18 +703,13 @@
             })
         }).then(response => response.json())
           .then(data => {
-              if (data.total_visits) {
-                  document.getElementById('visitor-count').innerHTML = `
-                      Total: ${data.total_visits.toLocaleString()}<br>
-                      Today: ${data.visits_today || 0}<br>
-                      <span style="font-size: 11px; opacity: 0.7;">You: Visit #${visits[SITE_ID].count}</span>
-                  `;
+              if (data.total_visits && counterEl) {
+                  counterEl.textContent = data.total_visits.toLocaleString();
               }
           })
-          .catch(() => {
-              // API not available, keep local count
-          });
+          .catch(() => { /* API not available, keep local count */ });
     })();
     </script>
+    <!-- End Visit Counter -->
 </body>
 </html>

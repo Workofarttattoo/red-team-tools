@@ -1,0 +1,15 @@
+{
+  "mcpServers": {
+    "red-team-tools": {
+      "command": "python3",
+      "args": ["/Users/noone/red-team-tools/mcp_server.py"],
+      "env": {},
+      "description": "Red Team Security Tools with Semantic Lattice Navigation",
+      "capabilities": {
+        "resources": true,
+        "tools": true,
+        "prompts": false
+      }
+    }
+  }
+}
